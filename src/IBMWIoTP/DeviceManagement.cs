@@ -47,17 +47,57 @@ namespace IBMWIoTP
 		bool isSync = false;
 		ILog log = log4net.LogManager.GetLogger(typeof(DeviceManagement));
 		
-		
+		/// <summary>
+		///  Constructor of device management, helps to connect as a managed device to Watson IoT 
+ 		/// </summary>
+		/// <param name="orgId">
+		///  object of String which denotes your organization Id</param>
+		/// <param name="deviceType">object of String which denotes your device type</param>
+		/// <param name="deviceID">object of String which denotes device Id</param>
+		/// <param name="authmethod">object of String which denotes your authentication method</param>
+		/// <param name="authtoken">object of String which denotes your authentication token</param>
 		public DeviceManagement(string orgId, string deviceType, string deviceID, string authmethod, string authtoken):
 			base(orgId,deviceType,deviceID,authmethod,authtoken)
 		{
 			
 		}
+		/// <summary>
+		///  Constructor of device management, helps to connect as a managed device to Watson IoT 
+		/// </summary>
+		///  object of String which denotes your organization Id</param>
+		/// <param name="orgId">
+		///  object of String which denotes your organization Id</param>
+		/// <param name="deviceType">object of String which denotes your device type</param>
+		/// <param name="deviceID">object of String which denotes device Id</param>
+		/// <param name="authmethod">object of String which denotes your authentication method</param>
+		/// <param name="authtoken">object of String which denotes your authentication token</param>
+		/// <param name="isSync"> Boolean value to represent the device management request and response in synchronize mode or Async mode</param>
 		public DeviceManagement(string orgId, string deviceType, string deviceID, string authmethod, string authtoken,bool isSync):
 			base(orgId,deviceType,deviceID,authmethod,authtoken)
 		{
 			this.isSync = isSync;
 		}
+		/// <summary>
+		///  Constructor of device management, helps to connect as a managed device to Watson IoT  
+		/// </summary>
+		/// <param name="filePath">object of String which denotes file path that contains device credentials in specified format</param>
+		public DeviceManagement(string filePath):
+			base(filePath)
+		{
+		}
+		/// <summary>
+		///  Constructor of device management, helps to connect as a managed device to Watson IoT  
+		/// </summary>
+		/// <param name="filePath">object of String which denotes file path that contains device credentials in specified format</param>
+		/// <param name="isSync">Boolean value to represent the device management request and response in synchronize mode or Async mode</param>
+		public DeviceManagement(string filePath,bool isSync):
+			base(filePath)
+		{
+			this.isSync = isSync;
+		}
+		/// <summary>
+		/// To connect the device to the Watson IoT Platform
+		/// </summary>
 		public override void connect()
 		{
 			base.connect();
@@ -131,10 +171,15 @@ namespace IBMWIoTP
         	}
 
         }
+		/// <summary>
+		///  To know the current connection status of the device
+		/// </summary>
+		/// <returns> bool value of status of connection </returns>
 		public bool connectionStatus()
 		{
 			return mqttClient.IsConnected;
 		}
+		
 		private void publishDM (string topic , object message,string reqId)
 		{
 			var json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(message);
@@ -144,6 +189,13 @@ namespace IBMWIoTP
 			if(this.isSync)
 				oSignalEvent.WaitOne();
 		}
+		/// <summary>
+		///  To register the device as an managed device to Watson IoT Platform
+		/// </summary>
+		/// <param name="lifeTime">Time period of the device to remain as managed device</param>
+		/// <param name="supportDeviceActions">bool value to represent the support for device actions for the device</param>
+		/// <param name="supportFirmwareActions">bool value to represent the support for firmware action for the device</param>
+		/// <returns>unique id of the current request</returns>
 		public string manage(int lifeTime,bool supportDeviceActions,bool supportFirmwareActions)
 		{
 			try{
@@ -168,7 +220,14 @@ namespace IBMWIoTP
         	}
 		
 		}
-		
+		/// <summary>
+		///  To register the device as an managed device to Watson IoT Platform
+		/// </summary>
+		/// <param name="lifeTime">Time period of the device to remain as managed device</param>
+		/// <param name="supportDeviceActions">bool value to represent the support for device actions for the device</param>
+		/// <param name="supportFirmwareActions">bool value to represent the support for firmware action for the device</param>
+		/// <param name="metaData"> Object that represent the meta information of the device </param>
+		/// <returns>unique id of the current request</returns>
 		public string manage(int lifeTime,bool supportDeviceActions,bool supportFirmwareActions, Object metaData)
 		{
 			try{
@@ -193,7 +252,10 @@ namespace IBMWIoTP
         	}
 			
 		}
-		
+		/// <summary>
+		///  To register the device as an Unmanaged device to Watson Iot Platform
+		/// </summary>
+		/// <returns>unique id of the current request</returns>
 		public string unmanage()
 		{
 			try{
@@ -208,6 +270,11 @@ namespace IBMWIoTP
         		return "";
         	}
 		}
+		/// <summary>
+		///  To Add error code to the Watson IoT platform for the device 
+		/// </summary>
+		/// <param name="errorCode">integer value of device error code </param>
+		/// <returns>unique id of the current request</returns>
 		public string addErrorCode(int errorCode)
 		{
 			try
@@ -227,6 +294,10 @@ namespace IBMWIoTP
         	}
 		}
 		
+		/// <summary>
+		///  To Clear the error code added by the device in the Watson IoT Platform
+		/// </summary>
+		/// <returns>unique id of the current request</returns>
 		public string clearErrorCode()
 		{
 			try
@@ -242,6 +313,13 @@ namespace IBMWIoTP
         		return "";
         	}
 		}
+		/// <summary>
+		///  To Add log of the device status to Watson IoT Platform 
+		/// </summary>
+		/// <param name="msg">String value of the log message </param>
+		/// <param name="dataAsString"> String value of base64-encoded binary diagnostic data </param>
+		/// <param name="severityValue">intiger value of severity (0: informational, 1: warning, 2: error)</param>
+		/// <returns>unique id of the current request</returns>
 		public string addLog(string msg, string dataAsString,int severityValue)
 		{
 			try
@@ -264,6 +342,10 @@ namespace IBMWIoTP
         	}
 		}
 		
+		/// <summary>
+		///  To clear the log present in Watson IoT platform for the current device
+		/// </summary>
+		/// <returns>unique id of the current request</returns>
 		public string clearLog()
 		{
 			try
@@ -279,7 +361,14 @@ namespace IBMWIoTP
         		return "";
         	}
 		}
-		
+		/// <summary>
+		/// To Update the current location of the device to the Watson IoT Platform
+		/// </summary>
+		/// <param name="longitude">double value of longitude of the device </param>
+		/// <param name="latitude">double value of latitude of the device</param>
+		/// <param name="elevation">double value of elevation of the device</param>
+		/// <param name="accuracy">double value of accuracy of the reading</param>
+		/// <returns>unique id of the current request</returns>
 		public string setLocation( double  longitude,double latitude,double elevation,double accuracy)
 		{
 			try

@@ -12,47 +12,46 @@
  */
  
 using System;
-using System.Text;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
-using uPLibrary.Networking.M2Mqtt.Messages;
 using log4net;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace IBMWIoTP
 {
-    /// <author>Kaberi Singh, kabsingh@in.ibm.com</author>
-    /// <date>28/08/2015 09:05:05 </date>
     /// <summary>
     ///     A client, used by application, that handles connections with the IBM Internet of Things Foundation. <br>
     ///     This is a derived class from AbstractClient and can be used by end-applications to handle connections with IBM Internet of Things Foundation.
     /// </summary>
-    public class ApplciationClient : AbstractClient
+    public class ApplicationClient : AbstractClient
     {
-        ILog log = log4net.LogManager.GetLogger(typeof(ApplciationClient));
+        ILog log = log4net.LogManager.GetLogger(typeof(ApplicationClient));
         /// <summary>
-        ///     Delagate that defines command handler for arrived message 
+        ///     Delegate that defines command handler for arrived message 
         /// </summary>
         public delegate void processCommand(String cmdName, string format, string data);
         // event for command callback
         public event processCommand commandCallback;
 
         /// <summary>
-        ///     Delagate that defines event handler for arrived message 
+        ///     Delegate that defines event handler for arrived message 
         /// </summary>
         public delegate void processEvent(String evtName, string format, string data);
         // event for event callback
         public event processEvent eventCallback;
 
         /// <summary>
-        ///     Delagate that defines status handler for device status 
+        ///     Delegate that defines status handler for device status 
         /// </summary>
         public delegate void processDeviceStatus(String deviceType, string deviceId, string data);
         // event for device status callback
         public event processDeviceStatus deviceStatusCallback;
 
         /// <summary>
-        ///     Delagate that defines status handler for application status 
+        ///     Delegate that defines status handler for application status 
         /// </summary>
         public delegate void processAppStatus(String appId, string data);
         // event for application status callback
@@ -63,22 +62,40 @@ namespace IBMWIoTP
         private static string APP_STATUS_PATTERN = "iot-2/app/(.+)/mon";
         private static string DEVICE_COMMAND_PATTERN = "iot-2/type/(.+)/id/(.+)/cmd/(.+)/fmt/(.+)";
         
+        private static string _orgId,  _appID,  _apiKey,  _authToken;
         /// <summary>
         ///     A client, used by application, that handles connections with the IBM Internet of Things Foundation. <br>
         ///     This is a derived class from AbstractClient and can be used by end-applications to handle connections with IBM Internet of Things Foundation.
         /// </summary>
-        public ApplciationClient(string OrgId, string appID, string apiKey, string authToken)
+        public ApplicationClient(string OrgId, string appID, string apiKey, string authToken)
             : base(OrgId, "a" + CLIENT_ID_DELIMITER + OrgId + CLIENT_ID_DELIMITER + appID, apiKey, authToken)
         {
 
         }
-
-        public ApplciationClient(string appID)
-            : base("quickstart", "a" + CLIENT_ID_DELIMITER + "quickstart" + CLIENT_ID_DELIMITER + appID, null, null)
+        public ApplicationClient(string filePath)
+            : base(parseFromFile(filePath), "a" + CLIENT_ID_DELIMITER + _orgId + CLIENT_ID_DELIMITER + _appID, _apiKey, _authToken)
         {
 
         }
 
+        public ApplicationClient(string appID,bool isQuickStart)
+            : base("quickstart", "a" + CLIENT_ID_DELIMITER + "quickstart" + CLIENT_ID_DELIMITER + appID, null, null)
+        {
+
+        }
+        
+		private static string parseFromFile(string filePath)
+        {
+        	Dictionary<string,string> data = parseFile(filePath,"## Application Registration detail");
+        	if(	!data.TryGetValue("Organization-ID",out _orgId)||
+        		!data.TryGetValue("App-ID",out _appID)||
+        		!data.TryGetValue("Api-Key",out _apiKey)||
+        		!data.TryGetValue("Authentication-Token",out _authToken) )
+        	{
+        		throw new Exception("Invalid property file");
+        	}
+        	return _orgId;
+        }
         /// <summary>
         ///     Subscribe to device status of the IBM Internet of Things Foundation. <br>
         ///     All the devices, for an org, are monitored <br>
@@ -91,21 +108,23 @@ namespace IBMWIoTP
         /// <summary>
         ///     Subscribe to device status of the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///         object of String which denotes deviceType
-        /// <param name="deviceId"></param>
-        ///         object of String which denotes deviceId
+        /// <param name="deviceType">
+        ///         object of String which denotes deviceType</param>
+        /// <param name="deviceId">
+        ///         object of String which denotes deviceId</param>
         ///
-        public void subscribeToDeviceStatus(String deviceType, String deviceId)
+        public void subscribeToDeviceStatus(string deviceType, string deviceId)
         {
         	try
         	{
-	            String newTopic = "iot-2/type/" + deviceType + "/id/" + deviceId + "/mon";
-	            string[] topics = { newTopic };
-	            byte[] qosLevels = { MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE };
-	            mqttClient.Subscribe(topics, qosLevels);
-	            mqttClient.MqttMsgPublishReceived -= client_MqttMsgArrived;
-	            mqttClient.MqttMsgPublishReceived += client_MqttMsgArrived;
+//	            String newTopic = "iot-2/type/" + deviceType + "/id/" + deviceId + "/mon";
+//	            string[] topics = { newTopic };
+//	            byte[] qosLevels = { MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE };
+//	            mqttClient.Subscribe(topics, qosLevels);
+//	            mqttClient.MqttMsgPublishReceived -= client_MqttMsgArrived;
+//	            mqttClient.MqttMsgPublishReceived += client_MqttMsgArrived;
+        		subscribeToDeviceStatus(deviceType,deviceId,0);
+        		
 	         }
         	catch(Exception e)
         	{
@@ -116,19 +135,29 @@ namespace IBMWIoTP
         /// <summary>
         ///     Subscribe to device status of the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///         object of String which denotes deviceType
-        /// <param name="deviceId"></param>
-        ///         object of String which denotes deviceId
-        /// <param name="qos"></param>
-        ///     Quality of Service, in int - can have values 0,1,2
-        public void subscribeToDeviceStatus(String deviceType, String deviceId, int qos)
+        /// <param name="deviceType">
+        ///         object of String which denotes deviceType</param>
+        /// <param name="deviceId">
+        ///         object of String which denotes deviceId</param>
+        /// <param name="qos">
+        ///     Quality of Service, in int - can have values 0,1,2</param>
+        public void subscribeToDeviceStatus(string deviceType, string deviceId, int qos)
         {
         	try
         	{
 	            String newTopic = "iot-2/type/" + deviceType + "/id/" + deviceId + "/mon";
 	            string[] topics = { newTopic };
-	            byte[] qosLevels = { MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE };
+	            byte level = MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE;
+	            if(qos==1)
+	            {
+	            	level = MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE ;
+	            }
+	            if(qos==2)
+	            {
+	            	level = MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE ;
+	            }
+	            byte[] qosLevels = { level };
+	            
 	            mqttClient.Subscribe(topics, qosLevels);
 	            mqttClient.MqttMsgPublishReceived -= client_MqttMsgArrived;
 	            mqttClient.MqttMsgPublishReceived += client_MqttMsgArrived;
@@ -142,9 +171,9 @@ namespace IBMWIoTP
         /// <summary>
         ///     Subscribe to application status of the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="appId"></param>
-        ///     object of String which denotes appId
-        public void subscribeToApplicationStatus(String appId)
+        /// <param name="appId">
+        ///     object of String which denotes appId</param>
+        public void subscribeToApplicationStatus(string appId)
         {
         	try
         	{
@@ -188,16 +217,16 @@ namespace IBMWIoTP
         /// <summary>
         ///     Subscribe to device events of the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///         object of String which denotes deviceType
-        /// <param name="deviceId"></param>
-        ///         object of String which denotes deviceId
-        /// <param name="evt"></param>
-        ///         object of String which denotes event name
-        /// <param name="format"></param>
-        ///         object of String which denotes format
-        /// <param name="qos"></param>
-        ///         Quality of Service, in int - can have values 0,1,2
+        /// <param name="deviceType">
+        ///         object of String which denotes deviceType</param>
+        /// <param name="deviceId">
+        ///         object of String which denotes deviceId</param>
+        /// <param name="evt">
+        ///         object of String which denotes event name</param>
+        /// <param name="format">
+        ///         object of String which denotes format</param>
+        /// <param name="qos">
+        ///         Quality of Service, in int - can have values 0,1,2</param>
         public void subscribeToDeviceEvents(string deviceType, string deviceId, string evt, string format, byte qos)
         {
         	try
@@ -219,16 +248,16 @@ namespace IBMWIoTP
         /// <summary>
         ///     Subscribe to device commands of the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///         object of String which denotes deviceType
-        /// <param name="deviceId"></param>
-        ///         object of String which denotes deviceId
-        /// <param name="cmd"></param>
-        ///         object of String which denotes command name
-        /// <param name="format"></param>
-        ///         object of String which denotes format
-        /// <param name="qos"></param>
-        ///         Quality of Service, in int - can have values 0,1,2
+        /// <param name="deviceType">
+        ///         object of String which denotes deviceType</param>
+        /// <param name="deviceId">
+        ///         object of String which denotes deviceId</param>
+        /// <param name="cmd">
+        ///         object of String which denotes command name</param>
+        /// <param name="format">
+        ///         object of String which denotes format</param>
+        /// <param name="qos">
+        ///         Quality of Service, in int - can have values 0,1,2</param>
         public void subscribeToDeviceCommands(string deviceType, string deviceId, string cmd, string format, byte qos)
         {
         	try
@@ -330,11 +359,11 @@ namespace IBMWIoTP
         ///     Quality of Service is set to 0 <br>
         ///     All events, of a given device type and device id, are subscribed to.
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///     object of String which denotes deviceType 
-        /// <param name="deviceId"></param>
-        ///     object of String which denotes deviceId
-        public void subscribeToDeviceEvents(String deviceType, String deviceId)
+        /// <param name="deviceType">
+        ///     object of String which denotes deviceType </param>
+        /// <param name="deviceId">
+        ///     object of String which denotes deviceId</param>
+        public void subscribeToDeviceEvents(string deviceType, string deviceId)
         {
             subscribeToDeviceEvents(deviceType, deviceId, "+", "+", 0);
         }
@@ -345,19 +374,19 @@ namespace IBMWIoTP
 	    ///     at Quality of Service (QoS) 0, which means that a successful send does not guarantee
 	    ///     receipt even if the publish is successful.
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///     object of String which denotes deviceType 
-        /// <param name="deviceId"></param>
-        ///     object of String which denotes deviceId
-        /// <param name="command"></param>
-        ///     object of String which denotes command
-        /// <param name="format"></param>
-        ///     object of String which denotes format
-        /// <param name="data"></param>
-        ///     Payload data
-        /// <returns></returns>
-        ///     Whether the send was successful
-        public bool publishCommand(String deviceType, String deviceId, String command, string format, string data)
+        /// <param name="deviceType">
+        ///     object of String which denotes deviceType </param>
+        /// <param name="deviceId">
+        ///     object of String which denotes deviceId</param>
+        /// <param name="command">
+        ///     object of String which denotes command</param>
+        /// <param name="format">
+        ///     object of String which denotes format</param>
+        /// <param name="data">
+        ///     Payload data</param>
+        /// <returns>
+        ///     Whether the send was successful</returns>
+        public bool publishCommand(string deviceType, string deviceId, string command, string format, string data)
         {
             return publishCommand(deviceType, deviceId, command, format, data, 0);
         }
@@ -365,21 +394,21 @@ namespace IBMWIoTP
         /// <summary>
         ///     Publish command to the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///     object of String which denotes deviceType
-        /// <param name="deviceId"></param>
-        ///     object of String which denotes deviceId
-        /// <param name="command"></param>
-        ///     object of String which denotes command
-        /// <param name="format"></param>
-        ///     object of String which denotes format
-        /// <param name="data"></param>
-        ///     Payload data
-        /// <param name="qos"></param>
-        ///     Quality of Service, in int - can have values 0,1,2
-        /// <returns></returns>
-        ///     Whether the send was successful.
-        public bool publishCommand(String deviceType, String deviceId, String command, string format, string data, int qos)
+        /// <param name="deviceType">
+        ///     object of String which denotes deviceType</param>
+        /// <param name="deviceId">
+        ///     object of String which denotes deviceId</param>
+        /// <param name="command">>
+        ///     object of String which denotes command</param
+        /// <param name="format">
+        ///     object of String which denotes format</param>
+        /// <param name="data">
+        ///     Payload data</param>
+        /// <param name="qos">
+        ///     Quality of Service, in int - can have values 0,1,2</param>
+        /// <returns>
+        ///     Whether the send was successful.</returns>
+        public bool publishCommand(string deviceType, string deviceId, string command, string format, string data, int qos)
         {
         	try
         	{
@@ -412,39 +441,39 @@ namespace IBMWIoTP
         ///     at Quality of Service (QoS) 0, which means that a successful send does not guarantee
         ///     receipt even if the publish is successful.
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///     object of String which denotes deviceType
-        /// <param name="deviceId"></param>
-        ///     object of String which denotes deviceId
-        /// <param name="evt"></param>
-        ///     object of String which denotes event
-        /// <param name="data"></param>
-        ///     Payload data
-        /// <returns></returns>
-        ///     Whether the send was successful.
-        public bool publishEvent(String deviceType, String deviceId, String evt, Object data)
+        /// <param name="deviceType">
+        ///     object of String which denotes deviceType</param>
+        /// <param name="deviceId">
+        ///     object of String which denotes deviceId</param>
+        /// <param name="evt">
+        ///     object of String which denotes event</param>
+        /// <param name="data">
+        ///     Payload data</param>
+        /// <returns>
+        ///     Whether the send was successful.</returns>
+        public bool publishEvent(string deviceType, string deviceId, string evt, Object data)
         {
             return publishEvent(deviceType, deviceId, evt, data, 0);
         }
 
         /// <summary>
         ///     Publish event, on the behalf of a device, to the IBM Internet of Things Foundation. <br>
-        ///     This method will attempt to create a JSON obejct out of the payload
+        ///     This method will attempt to create a JSON object out of the payload
         /// </summary>
-        /// <param name="deviceType"></param>
-        ///      object of String which denotes deviceType
-        /// <param name="deviceId"></param>
-        ///         object of String which denotes deviceId
-        /// <param name="evt"></param>
-        ///     object of String which denotes event
-        /// <param name="data"></param>
-        ///     Payload data
-        /// <param name="qos"></param>
-        ///     Quality of Service, in int - can have values 0,1,2
-        /// <returns></returns>
-        /// Whether the send was successful.
+        /// <param name="deviceType">
+        ///      object of String which denotes deviceType</param>
+        /// <param name="deviceId">
+        ///         object of String which denotes deviceId</param>
+        /// <param name="evt">
+        ///     object of String which denotes event</param>
+        /// <param name="data">
+        ///     Payload data</param>
+        /// <param name="qos">
+        ///     Quality of Service, in int - can have values 0,1,2</param>
+        /// <returns>
+        /// Whether the send was successful.</returns>
 
-        public bool publishEvent(String deviceType, String deviceId, String evt, Object data, int qos)
+        public bool publishEvent(string deviceType, string deviceId, string evt, Object data, int qos)
         {
         	try
         	{

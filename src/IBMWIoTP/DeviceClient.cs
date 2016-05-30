@@ -28,8 +28,6 @@ using log4net;
 
 namespace IBMWIoTP
 {
-    /// <author>Kaberi Singh, kabsingh@in.ibm.com</author>
-    /// <date>28/08/2015 09:05:05 </date>
     /// <summary>
     ///     A client, used by device, that handles connections with the IBM Internet of Things Foundation. <br>
     ///     This is a derived class from AbstractClient and can be used by embedded devices to handle connections with IBM Internet of Things Foundation.
@@ -37,6 +35,12 @@ namespace IBMWIoTP
     public class DeviceClient : AbstractClient
     {
         ILog log = log4net.LogManager.GetLogger(typeof(DeviceClient));
+        static string _orgId ="";
+        static string _deviceType ="";
+        static string _deviceID ="";
+        static string _authmethod ="";
+        static string _authtoken ="";
+        
         public DeviceClient(string orgId, string deviceType, string deviceID, string authmethod, string authtoken)
             : base(orgId, "d" + CLIENT_ID_DELIMITER + orgId + CLIENT_ID_DELIMITER + deviceType + CLIENT_ID_DELIMITER + deviceID, "use-token-auth", authtoken)
         {
@@ -48,7 +52,27 @@ namespace IBMWIoTP
         {
 
         }
-        
+        public DeviceClient(string filePath) :
+        	base(parseFromFile(filePath), "d" + CLIENT_ID_DELIMITER + _orgId + CLIENT_ID_DELIMITER + _deviceType + CLIENT_ID_DELIMITER + _deviceID, "use-token-auth", _authtoken)
+        	
+        {
+        	
+        	
+        }
+        private static string parseFromFile(string filePath)
+        {
+        	Dictionary<string,string> data = parseFile(filePath,"## Device Registration detail");
+        	if(	!data.TryGetValue("Organization-ID",out _orgId)||
+        		!data.TryGetValue("Device-Type",out _deviceType)||
+        		!data.TryGetValue("Device-ID",out _deviceID)||
+        		!data.TryGetValue("Authentication-Method",out _authmethod)||
+        		!data.TryGetValue("Authentication-Token",out _authtoken) )
+        	{
+        		throw new Exception("Invalid property file");
+        	}
+        	return _orgId;
+        }
+        [Obsolete]
         private void MqttMsgReceived(MqttMsgPublishEventArgs e)
         {
             log.Info("*** Message Received.");
@@ -60,25 +84,31 @@ namespace IBMWIoTP
         /// <summary>
         ///     Publish event to the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="evt"></param>
-        ///      object of String which denotes event 
-        /// <param name="format"></param>
-        ///      object of String which denotes format 
-        /// <param name="msg"></param>
-        ///      object of String which denotes message 
-        /// <param name="qosLevel"></param>
-        ///     Quality of Service, in int - can have values 0,1,2
-        public void publishEvent(String evt, String format, String msg, byte qosLevel)
+        /// <param name="evt">
+        ///      object of String which denotes event </param>
+        /// <param name="format">
+        ///      object of String which denotes format </param>
+        /// <param name="msg">
+        ///      object of String which denotes message </param>
+        /// <param name="qosLevel">
+        ///     Quality of Service, in int - can have values 0,1,2</param>
+        public bool publishEvent(String evt, String format, String msg, byte qosLevel)
         {
         	try{
+        		if (!isConnected()) {
+					return false;
+				}
 	           	mqttClient.MqttMsgPublished += client_MqttMsgPublished;
 	            string topic = "iot-2/evt/" + evt + "/fmt/" + format;
 	            mqttClient.Publish(topic, Encoding.UTF8.GetBytes(msg), qosLevel, false);
 	            log.Info("Published to topic [" + topic + "] msg[" + msg + "]");
+	            return true;
         	}
         	catch(Exception e)
         	{
         		log.Error("Execption has occer in Publish Event ",e);
+				return false;
+        		
         	}
         	
         }
@@ -86,26 +116,26 @@ namespace IBMWIoTP
         /// <summary>
         ///     Publish event to the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="evt"></param>
-        ///      object of String which denotes event 
-        /// <param name="format"></param>
-        ///      object of String which denotes format 
-        /// <param name="msg"></param>
-        ///      object of String which denotes message 
-        public void publishEvent(String evt, String format, String msg)
+        /// <param name="evt">
+        ///      object of String which denotes event </param>
+        /// <param name="format">
+        ///      object of String which denotes format </param>
+        /// <param name="msg">
+        ///      object of String which denotes message</param> 
+        public bool publishEvent(String evt, String format, String msg)
         {
-            publishEvent(evt, format, msg, 0);
+            return publishEvent(evt, format, msg, 0);
         }
 
         /// <summary>
         ///     Subscribe command to the IBM Internet of Things Foundation. <br>
         /// </summary>
-        /// <param name="cmd"></param>
-        ///      object of String which denotes command 
-        /// <param name="format"></param>
-        ///      object of String which denotes format 
-        /// <param name="qosLevel"></param>
-        ///     Quality of Service, in int - can have values 0,1,2
+        /// <param name="cmd">
+        ///      object of String which denotes command </param>
+        /// <param name="format">
+        ///      object of String which denotes format </param>
+        /// <param name="qosLevel">
+        ///     Quality of Service, in int - can have values 0,1,2</param>
         public void subscribeCommand(String cmd, String format, byte qosLevel)
         {
         	try{
@@ -128,6 +158,7 @@ namespace IBMWIoTP
         /// <summary>
         ///     Publish command to the IBM Internet of Things Foundation. <br>
         /// </summary>
+        [Obsolete]
         void client_EventPublished(Object sender, uPLibrary.Networking.M2Mqtt.Messages.MqttMsgPublishEventArgs e)
         {
             try
@@ -142,12 +173,12 @@ namespace IBMWIoTP
                 log.Error("Execption has occer in client_EventPublished",ex);
             }
         }
-
+		[Obsolete]
         void client_MqttMsgSubscribed(object sender, MqttMsgSubscribedEventArgs e)
         {
             log.Info("*** Message subscribed : " + e.MessageId);
         }
-
+		[Obsolete]
         void client_MqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
         {
             log.Info("*** Message published : " + e.MessageId);

@@ -28,8 +28,6 @@ using log4net;
 
 namespace IBMWIoTP
 {
-    /// <author>Kaberi Singh, kabsingh@in.ibm.com</author>
-    /// <date>28/08/2015 09:05:05 </date>
     /// <summary>
     ///     A client that handles connections with the IBM Watson IoT Platform. <br>
     ///     This is an abstract class which has to be extended
@@ -50,14 +48,14 @@ namespace IBMWIoTP
         /// <summary>
         ///     Note that this class does not have a default constructor <br>
 	    /// </summary>
-        /// <param name="orgid"></param>
-        ///     object of String which denotes OrgId 
-        /// <param name="clientId"></param>
-        ///     object of String which denotes clientId 
-        /// <param name="userName"></param>
-        ///     object of String which denotes userName 
-        /// <param name="password"></param>
-        ///     object of String which denotes password 
+        /// <param name="orgid">
+        ///     object of String which denotes OrgId </param>
+        /// <param name="clientId">
+        ///     object of String which denotes clientId </param>
+        /// <param name="userName">
+        ///     object of String which denotes userName </param>
+        /// <param name="password">
+        ///     object of String which denotes password </param>
         public AbstractClient(string orgid, string clientId, string userName, string password)
         {
             this.clientId = clientId;
@@ -69,15 +67,8 @@ namespace IBMWIoTP
             string hostName = orgid + DOMAIN;
 
             log.Info("hostname is :" + hostName);
+            mqttClient = new MqttClient(hostName);
 
-            if (orgid == "quickstart")
-            {
-                mqttClient = new MqttClient(hostName);
-            }
-            else
-            {
-                mqttClient = new MqttClient(hostName);
-            }
         }
 
        
@@ -127,8 +118,9 @@ namespace IBMWIoTP
         ///     Determine whether this device or application is currently connected to the IBM Internet
         ///     of Things Foundation.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
         ///     Whether the device or application is connected to the IBM Watson IoT Platform
+        /// </returns>
         public bool isConnected()
         {
             return mqttClient.IsConnected;
@@ -138,12 +130,36 @@ namespace IBMWIoTP
         ///     Provides a human readable String representation of this Device, including the number
         ///     of messages sent and the current connect status.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
         ///     String representation of the Device status
-        public String toString()
+        /// </returns>
+        public string toString()
         {
             return "[" + clientId + "] " +  "Connected = " + isConnected();
         }
-
+		
+        /// <summary>
+        ///  Parse the given file and gives key value pared dictionary of parameters separated with "=",parsing starts after the lien with the given region and end with a new line 
+        /// </summary>
+        /// <param name="path">
+        /// file path to be parsed</param>
+        /// <param name="region">
+        /// starting line of the requires segment</param>
+        /// <returns>
+        /// Dictionary of key,value pair in string,string format </returns>
+        public static Dictionary<string, string> parseFile(string path , string region)
+		{
+			Dictionary<string, string>  myDictionary = new Dictionary<string, string>();
+			string[] lines = System.IO.File.ReadAllLines(path);
+			var idx =Array.FindIndex(lines, row => row == region);
+			for (int i = idx+1; i < lines.Length; i++) {
+				if(string.IsNullOrWhiteSpace(lines[i]))
+				   break;
+				string[] tokens = lines[i].Split('=');
+				myDictionary.Add(tokens[0].Trim(),tokens[1].Trim());
+			
+			}
+			return myDictionary;
+		}
     }
 }

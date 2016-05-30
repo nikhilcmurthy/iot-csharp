@@ -10,13 +10,14 @@
  *   Hari hara prasad Viswanathan  - Initial Contribution
  */
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using log4net;
 
+using log4net;
 using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
 using uPLibrary.Networking.M2Mqtt.Exceptions;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace IBMWIoTP
 {
@@ -44,6 +45,19 @@ namespace IBMWIoTP
 		private string GATEWAY_NOTIFICATION_PATTERN = "iot-2/type/(.+)/id/(.+)/notify";
 		ILog log = log4net.LogManager.GetLogger(typeof(GatewayClient));
 		
+		static string _orgId ="";
+        static string _deviceType ="";
+        static string _deviceID ="";
+        static string _authmethod ="";
+        static string _authtoken ="";
+        /// <summary>
+		/// Constructor of Gateway Client, helps to connect a gateway to The Watson IoT Platform
+        /// </summary>
+        /// <param name="orgId">object of String which denotes your organization Id</param>
+        /// <param name="gatewayDeviceType">object of String which denotes your gateway type</param>
+        /// <param name="gatewayDeviceID">object of String which denotes gateway Id</param>
+        /// <param name="authMethod">object of String which denotes your authentication method</param>
+        /// <param name="authToken">object of String which denotes your authentication token</param>
 		public GatewayClient(string orgId, string gatewayDeviceType, string gatewayDeviceID, string authMethod, string authToken)
             : base(orgId, "g" + CLIENT_ID_DELIMITER + orgId + CLIENT_ID_DELIMITER + gatewayDeviceType + CLIENT_ID_DELIMITER + gatewayDeviceID, "use-token-auth", authToken)
 		{
@@ -51,16 +65,57 @@ namespace IBMWIoTP
 			this.gatewayDeviceType =gatewayDeviceType;
 			this.authtoken = authtoken;
 		}
-		
+		/// <summary>
+		/// Constructor of Gateway Client, helps to connect a gateway to The Watson IoT Platform
+		/// </summary>
+		/// <param name="filePath">object of String which denotes file path that contains gateway credentials in specified format</param>
+		public GatewayClient(string filePath)
+            : base(parseFromFile( filePath), "g" + CLIENT_ID_DELIMITER + _orgId + CLIENT_ID_DELIMITER + _deviceType + CLIENT_ID_DELIMITER + _deviceID, "use-token-auth", _authtoken)
+		{
+			this.gatewayDeviceID =_deviceID;
+			this.gatewayDeviceType =_deviceType;
+			this.authtoken = _authtoken;
+		}
+		private static string parseFromFile(string filePath)
+        {
+        	Dictionary<string,string> data = parseFile(filePath,"## Gateway Registration detail");
+        	if(	!data.TryGetValue("Organization-ID",out _orgId)||
+        		!data.TryGetValue("Device-Type",out _deviceType)||
+        		!data.TryGetValue("Device-ID",out _deviceID)||
+        		!data.TryGetValue("Authentication-Method",out _authmethod)||
+        		!data.TryGetValue("Authentication-Token",out _authtoken) )
+        	{
+        		throw new Exception("Invalid property file");
+        	}
+        	return _orgId;
+        }
 		private void subscrieToGatewayCommands(){
 			this.subscribeToDeviceCommands(this.gatewayDeviceType,this.gatewayDeviceID);
 		}
+		/// <summary>
+		/// To subscribe to all commands for the device connected to gateway  
+		/// </summary>
+		/// <param name="deviceType">string value of your device Type</param>
+		/// <param name="deviceId">string value of your device id</param>
 		public void subscribeToDeviceCommands(string deviceType, string deviceId) {
 			this.subscribeToDeviceCommands(deviceType,deviceId,"+");
 		}
+		/// <summary>
+		/// To subscribe to a specific command for the device connected to gateway  
+		/// </summary>
+		/// <param name="deviceType">string value of your device Type</param>
+		/// <param name="deviceId">string value of your device id</param>
+		/// <param name="command">string value of the command name to be subscriberd</param>
 		public void subscribeToDeviceCommands(string deviceType, string deviceId, string command) {
 			this.subscribeToDeviceCommands(deviceType,deviceId,command,0);
 		}
+		/// <summary>
+		/// To subscribe to a specific command for the device connected to gateway with custom quality of services
+		/// </summary>
+		/// <param name="deviceType">string value of your device Type</param>
+		/// <param name="deviceId">string value of your device id</param>
+		/// <param name="command">string value of the command name to be subscriberd</param>
+		/// <param name="qos"> int value of the quality of services 0,1,2</param>
 		public void subscribeToDeviceCommands(string deviceType, string deviceId, string command, int qos) {
 			try {
 				mqttClient.MqttMsgPublishReceived -= client_MqttMsgPublishReceived;
@@ -74,14 +129,18 @@ namespace IBMWIoTP
                 log.Error("Execption has occer in subscribeToDeviceCommands",e);
 			}
 		}
-		
+		/// <summary>
+		/// To connect the device to the Watson IoT Platform
+		/// </summary>
 		public override void connect()
 		{
 			base.connect();
 			this.subscrieToGatewayCommands();
 			this.subscribeToGatewayNotification();
 		} 	
-		
+		/// <summary>
+		/// To subscribe to notifications from the platform to the gateway 
+		/// </summary>
 		public void subscribeToGatewayNotification() {
 			mqttClient.MqttMsgPublishReceived -= client_MqttMsgPublishReceived;
 			mqttClient.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
@@ -92,20 +151,47 @@ namespace IBMWIoTP
 			mqttClient.Subscribe(topics, qosLevels);
 
 		}
-
+		/// <summary>
+		///  To publish an event to the Watson IoT platform
+		/// </summary>
+		/// <param name="evt">string value of event name</param>
+		/// <param name="data">object of event data</param>
+		/// <returns>bool value of result of publish status </returns>
 		public bool publishGatewayEvent(string evt, object data) {
 			return publishDeviceEvent(this.gatewayDeviceType, this.gatewayDeviceID, evt, data, 0);
 		}
-	
+		/// <summary>
+		/// To publish an event to the Watson IoT platform with custom quality of services
+		/// </summary>
+		/// <param name="evt">string value of event name</param>
+		/// <param name="data">object of event data</param>
+		/// <param name="qos">int value of the quality of services 0,1,2</param>
+		/// <returns>bool value of result of publish status </returns>
 		public bool publishGatewayEvent(string evt, object data, int qos) {
 			return publishDeviceEvent(this.gatewayDeviceType, this.gatewayDeviceID, evt, data, qos);
 		}
 		
-	
+		/// <summary>
+		///  To Publish the event on behalf of the connected device to the Watson IoT Platform
+		/// </summary>
+		/// <param name="deviceType">string value of your device Type</param>
+		/// <param name="deviceId">string value of your device id</param>
+		/// <param name="evt">string value of event name</param>
+		/// <param name="data">object of event data</param>
+		/// <returns>bool value of result of publish status </returns>
 		public bool publishDeviceEvent(string deviceType, string deviceId, string evt, object data) {
 			return publishDeviceEvent(deviceType, deviceId, evt, data, 0);
 		}
 	
+		/// <summary>
+		/// To Publish the event on behalf of the connected device to the Watson IoT Platform with custom quality of services
+		/// </summary>
+		/// <param name="deviceType">string value of your device Type</param>
+		/// <param name="deviceId">string value of your device id</param>
+		/// <param name="evt">string value of event name</param>
+		/// <param name="data">object of event data</param>
+		/// <param name="qos">int value of the quality of services 0,1,2</param>
+		/// <returns>bool value of result of publish status </returns>
 		public bool publishDeviceEvent(string deviceType, string deviceId, string evt, object data, int qos) {
 			if (!isConnected()) {
 				return false;
@@ -120,6 +206,7 @@ namespace IBMWIoTP
 			mqttClient.MqttMsgPublished += client_MqttMsgPublished;
 			return true;
 		}
+		[Obsolete]
 		private void MqttMsgReceived(MqttMsgPublishEventArgs e)
         {
           log.Info("*** Message Received.");
@@ -127,7 +214,8 @@ namespace IBMWIoTP
           log.Info("*** Message: " + System.Text.UTF8Encoding.UTF8.GetString(e.Message));
           log.Info("");
         }
-		 void client_EventPublished(Object sender, uPLibrary.Networking.M2Mqtt.Messages.MqttMsgPublishEventArgs e)
+		[Obsolete]
+		void client_EventPublished(Object sender, uPLibrary.Networking.M2Mqtt.Messages.MqttMsgPublishEventArgs e)
         {
             try
             {
@@ -141,12 +229,12 @@ namespace IBMWIoTP
                 log.Error("Execption has occer in client_EventPublished",ex);
             }
         }
-
+		[Obsolete]
         void client_MqttMsgSubscribed(object sender, MqttMsgSubscribedEventArgs e)
         {
           log.Info("*** Message subscribed : " + e.MessageId);
         }
-
+		[Obsolete]
         void client_MqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
         {
           log.Info("*** Message published : " + e.MessageId);
