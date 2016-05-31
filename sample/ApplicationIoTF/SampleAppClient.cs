@@ -52,7 +52,7 @@ namespace com.ibm.iotf.client.app.sample
 				
 
                 
-                ApplciationClient applicationClient = new ApplciationClient(orgId, appId, apiKey, authToken);
+                ApplicationClient applicationClient = new ApplicationClient(orgId, appId, apiKey, authToken);
                 applicationClient.connect();
 
                 Console.WriteLine("Connected sucessfully to app id : " + appId);
