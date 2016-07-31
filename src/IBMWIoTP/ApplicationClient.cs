@@ -39,7 +39,7 @@ namespace IBMWIoTP
         /// <summary>
         ///     Delegate that defines event handler for arrived message 
         /// </summary>
-        public delegate void processEvent(String evtName, string format, string data);
+        public delegate void processEvent(string deviceType, string deviceId,string evtName, string format, string data);
         // event for event callback
         public event processEvent eventCallback;
 
@@ -310,7 +310,7 @@ namespace IBMWIoTP
 	                log.Info("Match event..." + matchEvent.Groups[3].Value);
 	                if (eventCallback != null)
 	                {
-	                    this.eventCallback(matchEvent.Groups[3].Value, matchEvent.Groups[4].Value, result);
+	                    this.eventCallback(matchEvent.Groups[1].Value,matchEvent.Groups[2].Value,matchEvent.Groups[3].Value, matchEvent.Groups[4].Value, result);
 	                }
 	                return;
 	            }

@@ -86,9 +86,9 @@ namespace com.ibm.iotf.client.app.sample
              Console.WriteLine("Sample Application Client : Sample Command : " + cmdName + " format : " + format + " data : " + data);
         }
 
-        public static void processEvent(string eventName, string format, string data)
+        public static void processEvent(string deviceType,string deviceId ,string eventName, string format, string data)
         {
-             Console.WriteLine("Sample Application Client : Sample Event : " + eventName + " format : " + format + " data : " + data);
+             Console.WriteLine("Sample Application Client : Device Type"+deviceType+" Device ID:"+deviceId+"Sample Event : " + eventName + " format : " + format + " data : " + data);
         }
 
         public static void processDeviceStatus(string deviceType, string deviceId, string data)
