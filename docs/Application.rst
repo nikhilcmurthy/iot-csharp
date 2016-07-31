@@ -46,22 +46,14 @@ To subscribe to all events from all devices
         applicationClient.subscribeToDeviceEvents();
 
 
-To subscribe to all events from all devices of a specific type
+To subscribe to all events from a device
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: C#
 
         applicationClient.connect();
-        applicationClient.subscribeToDeviceEvents(deviceType);
+        applicationClient.subscribeToDeviceEvents(deviceType,deviceId);
 
-
-To subscribe to a specific event from all devices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code:: C#
-
-        applicationClient.connect();
-        applicationClient.subscribeToDeviceEvents(evt);
 
 
 To subscribe to a specific event from two or more different devices
@@ -70,7 +62,7 @@ To subscribe to a specific event from two or more different devices
 .. code:: C#
 
     applicationClient.connect();
-   applicationClient.subscribeToDeviceEvents(deviceType, deviceId, evt);
+   applicationClient.subscribeToDeviceEvents(deviceType, deviceId, evtName);
 
 
 To subscribe to all events published by a device in json format
@@ -79,7 +71,7 @@ To subscribe to all events published by a device in json format
 .. code:: C#
 
     applicationClient.connect();
-    applicationClient.subscribeToDeviceEvents(deviceType, deviceId, evt, "json", 0);
+    applicationClient.subscribeToDeviceEvents(deviceType, deviceId, evtName, eventFormat, qualityOfServies);
 
 
 Handling events from devices
@@ -87,14 +79,15 @@ Handling events from devices
 
 To process the events received by your subscriptions you need to register an event callback method.
 
-- ``event.device`` - string (uniquely identifies the device across all types of devices in the organization)
+- ``device Type `` - string (identifies the device type across all types of devices in the organization)
+- ``device Id `` - string (uniquely identifies the device across all devices of the above type in the organization)
 - ``eventName`` - string
 - ``eventFormat`` - string
 - ``eventData`` - string
 
 .. code:: C#
 
-    public static void processEvent(String eventName, string format, string data) {
+    public static void processEvent(string deviceType,string deviceId ,String eventName, string format, string data) {
         // Do something
     }
 
@@ -159,7 +152,7 @@ Applications can publish events as if they originated from a Device.
 .. code:: C#
 
      applicationClient.connect();
-     applicationClient.publishEvent(deviceType, deviceId, evt, data, 0);
+     applicationClient.publishEvent(deviceType, deviceId, evt, data, qualityOfServies);
 
 
 ----
@@ -173,4 +166,4 @@ Applications can publish commands to connected devices.
 .. code:: C#
 
      applicationClient.connect();
-     applicationClient.publishCommand(deviceType, deviceId, "testcmd", "json", data, 0);
+     applicationClient.publishCommand(deviceType, deviceId, cmdName, cmdFormat, data, qualityOfServies);
