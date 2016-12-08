@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractClient.cs" />
+    <Compile Include="ApiClient.cs" />
     <Compile Include="ApplicationClient.cs" />
     <Compile Include="DeviceClient.cs" />
     <Compile Include="DeviceManagement.cs" />
