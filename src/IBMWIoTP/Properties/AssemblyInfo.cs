@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("IBM")]
 [assembly: AssemblyProduct("IBMWIoTP")]
-[assembly: AssemblyCopyright("Copyright (c) 2016 IBM Corporation")]
+[assembly: AssemblyCopyright("Copyright (c) 2017 IBM Corporation")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can use the default the Revision and 
 // Build Numbers by using the '*' as shown below:
-[assembly: AssemblyVersion("0.1.2")]
+[assembly: AssemblyVersion("0.1.4")]
 
 // For log4net
 [assembly: log4net.Config.XmlConfigurator(ConfigFile="IBMWIoTPLog.config",Watch=true)]
