@@ -19,6 +19,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Configuration;
+using System.Security.Cryptography.X509Certificates;
 
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
@@ -65,13 +66,13 @@ namespace IBMWIoTP
             String now = DateTime.Now.ToString(".yyyy.MM.dd-THH.mm.fff");
 
             string hostName = orgid + DOMAIN;
-
+			X509Certificate cer = new X509Certificate();
+			cer.Import("message.pem");
             log.Info("hostname is :" + hostName);
-            mqttClient = new MqttClient(hostName);
+            mqttClient = new MqttClient(hostName,MQTTS_PORT,true,cer,new X509Certificate(),MqttSslProtocols.TLSv1_2);
+            //mqttClient = new MqttClient(hostName);
 
         }
-
-       
 
         /// <summary>
         ///     Connect the device from the IBM Watson IoT Platform

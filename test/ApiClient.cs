@@ -38,8 +38,8 @@ namespace test
 		[Test]
 		public void GetOrganizationDetail()
 		{
-		//	string result = client.GetOrganizationDetail();
-		//	StringAssert.Contains(orgId,result);
+			var result = client.GetOrganizationDetail();
+			StringAssert.Contains(orgId,result.Id);
 		}
 	}
 }

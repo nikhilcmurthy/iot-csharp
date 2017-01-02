@@ -63,6 +63,7 @@ namespace IBMWIoTP
         private static string DEVICE_COMMAND_PATTERN = "iot-2/type/(.+)/id/(.+)/cmd/(.+)/fmt/(.+)";
         
         private static string _orgId,  _appID,  _apiKey,  _authToken;
+        private static bool _isShared =false;
         /// <summary>
         ///     A client, used by application, that handles connections with the IBM Internet of Things Foundation. <br>
         ///     This is a derived class from AbstractClient and can be used by end-applications to handle connections with IBM Internet of Things Foundation.
@@ -72,11 +73,21 @@ namespace IBMWIoTP
         {
 
         }
-        public ApplicationClient(string filePath)
-            : base(parseFromFile(filePath), "a" + CLIENT_ID_DELIMITER + _orgId + CLIENT_ID_DELIMITER + _appID, _apiKey, _authToken)
+         public ApplicationClient(string OrgId, string appID, string apiKey, string authToken,bool isShared)
+         	: base(OrgId, getClientId(isShared,OrgId,appID), apiKey, authToken)
         {
 
         }
+        public ApplicationClient(string filePath)
+        	: base(parseFromFile(filePath), getClientId(_isShared, _orgId, _appID), _apiKey, _authToken)
+        {
+
+        }
+//        public ApplicationClient(string filePath)
+//            : base(parseFromFile(filePath), "a" + CLIENT_ID_DELIMITER + _orgId + CLIENT_ID_DELIMITER + _appID, _apiKey, _authToken)
+//        {
+//
+//        }
 
         public ApplicationClient(string appID,bool isQuickStart)
             : base("quickstart", "a" + CLIENT_ID_DELIMITER + "quickstart" + CLIENT_ID_DELIMITER + appID, null, null)
@@ -94,8 +105,20 @@ namespace IBMWIoTP
         	{
         		throw new Exception("Invalid property file");
         	}
+        	if(string.Equals(_apiKey.Split('-')[0],"A")){
+        	   _isShared = true;
+        	   }
         	return _orgId;
         }
+		private static string getClientId(bool isShared, string OrgId, string appId){
+		
+			if(isShared){
+				return "A" + CLIENT_ID_DELIMITER + OrgId + CLIENT_ID_DELIMITER + appId;
+			}
+			else{
+				return "a" + CLIENT_ID_DELIMITER + OrgId + CLIENT_ID_DELIMITER + appId;
+			}
+		}
         /// <summary>
         ///     Subscribe to device status of the IBM Internet of Things Foundation. <br>
         ///     All the devices, for an org, are monitored <br>
