@@ -1,5 +1,5 @@
-﻿/*
- *  Copyright (c) 2016 IBM Corporation and other Contributors.
+/*
+ *  Copyright (c) 2017 IBM Corporation and other Contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -66,11 +66,21 @@ namespace IBMWIoTP
             String now = DateTime.Now.ToString(".yyyy.MM.dd-THH.mm.fff");
 
             string hostName = orgid + DOMAIN;
-			X509Certificate cer = new X509Certificate();
-			cer.Import("message.pem");
-            log.Info("hostname is :" + hostName);
-            mqttClient = new MqttClient(hostName,MQTTS_PORT,true,cer,new X509Certificate(),MqttSslProtocols.TLSv1_2);
-            //mqttClient = new MqttClient(hostName);
+
+            try {
+            	X509Certificate cer = new X509Certificate();
+				      cer.Import("message.pem");
+	            log.Info("hostname is :" + hostName);
+	            mqttClient = new MqttClient(hostName,MQTTS_PORT,true,cer,new X509Certificate(),MqttSslProtocols.TLSv1_2);
+            
+            } catch (Exception) {
+	            log.Info("hostname is :" + hostName+"  with insecure connection");
+            	
+            	mqttClient = new MqttClient(hostName);
+            	//throw;
+            }
+			//mqttClient = new MqttClient(hostName);
+
 
         }
 
