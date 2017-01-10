@@ -40,7 +40,7 @@ namespace com.ibm.iotf.client.device.sample
         	string deviceType = "";
         	string uuid = "";
     		
-        	Console.Write("Enter your device type :");
+        	Console.Write("Enter your event type :");
 		   	deviceType = Console.ReadLine();
 
     		Console.Write("Enter your Quick Start Uid :");

@@ -1,4 +1,4 @@
-﻿/*
+/*
  *  Copyright (c) 2017 IBM Corporation and other Contributors.
  *
  * All rights reserved. This program and the accompanying materials
@@ -66,9 +66,10 @@ namespace IBMWIoTP
             String now = DateTime.Now.ToString(".yyyy.MM.dd-THH.mm.fff");
 
             string hostName = orgid + DOMAIN;
+
             try {
             	X509Certificate cer = new X509Certificate();
-				cer.Import("message.pem");
+				      cer.Import("message.pem");
 	            log.Info("hostname is :" + hostName);
 	            mqttClient = new MqttClient(hostName,MQTTS_PORT,true,cer,new X509Certificate(),MqttSslProtocols.TLSv1_2);
             
@@ -79,6 +80,7 @@ namespace IBMWIoTP
             	//throw;
             }
 			//mqttClient = new MqttClient(hostName);
+
 
         }
 
