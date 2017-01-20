@@ -47,17 +47,19 @@ namespace test
 			sample.version = "1.0.0"; 
 			sample.name = "test"; 
 			sample.url = "http://url.com"; 
+			sample.uri = "http://url.com"; 
 			sample.verifier = "1q2w4e"; 
-			sample.state = "0"; 
-			sample.updateStatus = "0"; 
+			sample.state = 0; 
+			sample.updateStatus = 0; 
 			sample.updatedDateTime = "time"; 
 			
 			Assert.AreEqual(sample.version , "1.0.0"); 
 			Assert.AreEqual(sample.name , "test"); 
 			Assert.AreEqual(sample.url , "http://url.com"); 
+			Assert.AreEqual(sample.uri , "http://url.com"); 
 			Assert.AreEqual(sample.verifier , "1q2w4e"); 
-			Assert.AreEqual(sample.state , "0"); 
-			Assert.AreEqual(sample.updateStatus , "0"); 
+			Assert.AreEqual(sample.state ,0); 
+			Assert.AreEqual(sample.updateStatus , 0); 
 			Assert.AreEqual(sample.updatedDateTime , "time"); 
 		}
 		

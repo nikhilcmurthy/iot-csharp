@@ -30,23 +30,50 @@ namespace IBMWIoTP
 	public class DeviceManagement : DeviceClient
 	{
 		// Publish MQTT topics
-		string MANAGE_TOPIC = "iotdevice-1/mgmt/manage";
-		string UNMANAGE_TOPIC = "iotdevice-1/mgmt/unmanage";
-		string UPDATE_LOCATION_TOPIC = "iotdevice-1/device/update/location";
-		string ADD_ERROR_CODE_TOPIC = "iotdevice-1/add/diag/errorCodes";
-		string CLEAR_ERROR_CODES_TOPIC = "iotdevice-1/clear/diag/errorCodes";
-		string NOTIFY_TOPIC = "iotdevice-1/notify";
-		string RESPONSE_TOPIC = "iotdevice-1/response";
-		string ADD_LOG_TOPIC = "iotdevice-1/add/diag/log";
-		string CLEAR_LOG_TOPIC = "iotdevice-1/clear/diag/log";
+		const string MANAGE_TOPIC = "iotdevice-1/mgmt/manage";
+		const string UNMANAGE_TOPIC = "iotdevice-1/mgmt/unmanage";
+		const string UPDATE_LOCATION_TOPIC = "iotdevice-1/device/update/location";
+		const string ADD_ERROR_CODE_TOPIC = "iotdevice-1/add/diag/errorCodes";
+		const string CLEAR_ERROR_CODES_TOPIC = "iotdevice-1/clear/diag/errorCodes";
+		const string NOTIFY_TOPIC = "iotdevice-1/notify";
+		const string RESPONSE_TOPIC = "iotdevice-1/response";
+		const string ADD_LOG_TOPIC = "iotdevice-1/add/diag/log";
+		const string CLEAR_LOG_TOPIC = "iotdevice-1/clear/diag/log";
 		
+		// Subscribe MQTT topics
+		const string DM_RESPONSE_TOPIC = "iotdm-1/response";
+		const string DM_OBSERVE_TOPIC = "iotdm-1/observe";
+		const string DM_REBOOT_TOPIC = "iotdm-1/mgmt/initiate/device/reboot";
+		const string DM_FACTORY_RESET ="iotdm-1/mgmt/initiate/device/factory_reset";
+		const string DM_UPDATE_TOPIC = "iotdm-1/device/update";
+		const string DM_CANCEL_OBSERVE_TOPIC = "iotdm-1/cancel";
+		const string DM_FIRMWARE_DOWNLOAD_TOPIC = "iotdm-1/mgmt/initiate/firmware/download";
+		const string DM_FIRMWARE_UPDATE_TOPIC = "iotdm-1/mgmt/initiate/firmware/update";
+		
+		//ResponceCode 
+		public static int RESPONSECODE_FUNCTION_NOT_SUPPORTED = 501;
+		public static int RESPONSECODE_ACCEPTED = 202;
+		public static int RESPONSECODE_INTERNAL_ERROR = 500;
+		public static int RESPONSECODE_BAD_REQUEST = 400;
+		
+		public static int UPDATESTATE_IDLE = 0;
+		public static int UPDATESTATE_DOWNLOADING = 1;
+		public static int UPDATESTATE_DOWNLOADED = 2;
+		public static int UPDATESTATE_SUCCESS = 0;
+		public static int UPDATESTATE_IN_PROGRESS = 1;
+		public static int UPDATESTATE_OUT_OF_MEMORY = 2;
+		public static int UPDATESTATE_CONNECTION_LOST = 3;
+		public static int UPDATESTATE_VERIFICATION_FAILED = 4;
+		public static int UPDATESTATE_UNSUPPORTED_IMAGE = 5;
+		public static int UPDATESTATE_INVALID_URI = 6;
+				
 		public DeviceInfo deviceInfo = new DeviceInfo();
 		public LocationInfo locationInfo = new LocationInfo();
 		List<DMRequest> collection = new List<IBMWIoTP.DeviceManagement.DMRequest>();
 		ManualResetEvent oSignalEvent = new ManualResetEvent(false);
 		bool isSync = false;
 		ILog log = log4net.LogManager.GetLogger(typeof(DeviceManagement));
-		
+		DeviceFirmware fw = null;
 		/// <summary>
 		///  Constructor of device management, helps to connect as a managed device to Watson IoT 
  		/// </summary>
@@ -101,7 +128,7 @@ namespace IBMWIoTP
 		public override void connect()
 		{
 			base.connect();
-			suscribeTOManagedTopics();
+			subscribeTOManagedTopics();
 		}
 		
 		
@@ -130,40 +157,143 @@ namespace IBMWIoTP
 			public string rc {get;set;}
 			
 		}
-
-
 		
-		private void suscribeTOManagedTopics(){
+		class DMField {
+			public DMField(){
+			}
+		
+			public string field {get;set;}
+			public DeviceFirmware value {get;set;}
+		}
+		class DMFields {
+			public DMFields(){
+			}
+			public DMField [] fields;
+		}
+		class DeviceActionReq{
+		
+			public DeviceActionReq(){
+			}
+			public string reqId {get;set;}
+			public DMFields d {get;set;}
+		}
+
+		private void subscribeTOManagedTopics(){
 			if(mqttClient.IsConnected)
 			{
 				
 				string[] topics = { "iotdm-1/#"};
 				byte[] qos = {1};
 				mqttClient.Subscribe(topics, qos);
+				mqttClient.MqttMsgPublishReceived -= subscriptionHandler;
 				mqttClient.MqttMsgPublishReceived += subscriptionHandler;
 				log.Info("Subscribes to topic [" +topics[0] + "]");
 			}
-		}		
+		}
+
+	
 		
 		public void subscriptionHandler(object sender, MqttMsgPublishEventArgs e)
         {
 			try{
-	            string result = System.Text.Encoding.UTF8.GetString(e.Message);
+				
+				string result = System.Text.Encoding.UTF8.GetString(e.Message);
 	            var serializer  = new System.Web.Script.Serialization.JavaScriptSerializer();
-	            var responce = serializer.Deserialize<DMResponce>(result);
-	            var itm =  collection.Find( x => x.reqID == responce.reqId );
-	            if( itm is DMRequest)
-	            {
-	            	log.Info("["+responce.rc+"]  "+itm.topic+" of ReqId  "+ itm.reqID);
-	            	if(this.mgmtCallback !=null)
-	            		this.mgmtCallback(itm.reqID,responce.rc);
-	            	collection.Remove(itm);
-	            }
-	             if(this.isSync){
-		            oSignalEvent.Set();
-	            	oSignalEvent.Dispose();
-	            	oSignalEvent = new ManualResetEvent(false);
-	            }
+				DeviceActionReq fwData;
+				int rc;
+				string msg;
+				
+				switch (e.Topic) {
+					case DM_RESPONSE_TOPIC :
+				            var responce = serializer.Deserialize<DMResponce>(result);
+				            var itm =  collection.Find( x => x.reqID == responce.reqId );
+				            if( itm is DMRequest)
+				            {
+				            	log.Info("["+responce.rc+"]  "+itm.topic+" of ReqId  "+ itm.reqID);
+				            	if(this.mgmtCallback !=null)
+				            		this.mgmtCallback(itm.reqID,responce.rc);
+				            	collection.Remove(itm);
+				            }
+				             if(this.isSync){
+					            oSignalEvent.Set();
+				            	oSignalEvent.Dispose();
+				            	oSignalEvent = new ManualResetEvent(false);
+				            }
+						break;
+					
+					case DM_REBOOT_TOPIC :
+					 	var res = serializer.Deserialize<DMResponce>(result);
+						log.Info("Device Rebot action called with ReqId : " +res.reqId );
+						if(this.actionCallback != null)
+							this.actionCallback(res.reqId , "reboot");
+						break;
+
+					case DM_FACTORY_RESET :
+					 	var resetResponce = serializer.Deserialize<DMResponce>(result);
+						log.Info("Device Factory rest action called with ReqId : " +resetResponce.reqId );
+						if(this.actionCallback != null)
+							this.actionCallback(resetResponce.reqId , "reset");
+						break;
+					case DM_UPDATE_TOPIC :
+						 fwData = serializer.Deserialize<DeviceActionReq>(result);
+						var fields = fwData.d.fields;
+						for (int i = 0; i < fields.Length; i++) {
+							if(fields[i].field == "mgmt.firmware" ){
+								this.fw = fields[i].value;
+								break;
+							}
+						}
+						if(this.fw != null)
+						{
+							sendResponce(fwData.reqId,204,"");
+						}
+
+						break;
+						
+					case DM_OBSERVE_TOPIC :
+						fwData = serializer.Deserialize<DeviceActionReq>(result);
+						sendResponce(fwData.reqId,200,"");
+						break;
+						
+					case DM_FIRMWARE_DOWNLOAD_TOPIC :
+						fwData = serializer.Deserialize<DeviceActionReq>(result);
+						 rc = RESPONSECODE_ACCEPTED;
+						 msg ="";
+						if(this.fw.state != UPDATESTATE_IDLE){
+							rc = RESPONSECODE_BAD_REQUEST;
+							msg = "Cannot download as the device is not in idle state";							
+						}
+						if(this.fwCallback != null)
+						{
+							this.fwCallback("download",this.fw);
+						}
+						
+						break;
+					case DM_FIRMWARE_UPDATE_TOPIC :
+						fwData = serializer.Deserialize<DeviceActionReq>(result);
+						 rc = RESPONSECODE_ACCEPTED;
+						 msg ="";
+						if(this.fw.state != UPDATESTATE_DOWNLOADED){
+							rc = RESPONSECODE_BAD_REQUEST;
+							msg = "Firmware is still not successfully downloaded.";							
+						}
+						if(this.fwCallback != null)
+						{
+							this.fwCallback("update",this.fw);
+						}
+						
+						break;
+					
+					case DM_CANCEL_OBSERVE_TOPIC :
+						fwData = serializer.Deserialize<DeviceActionReq>(result);
+						sendResponce(fwData.reqId,200,"");
+						break;
+
+					default:
+						
+						break;
+				}
+	           
 			}
         	catch(Exception ex)
         	{
@@ -171,6 +301,7 @@ namespace IBMWIoTP
         	}
 
         }
+		
 		/// <summary>
 		///  To know the current connection status of the device
 		/// </summary>
@@ -391,9 +522,70 @@ namespace IBMWIoTP
         	}
 		}
 		
+		public void sendResponce ( string reqId, int rc ,string msg){
+			var message = new { reqId =reqId , rc = Convert.ToString(rc) , message = msg};
+			var json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(message);
+			log.Info("Sending DM responce with payload " +json);
+			mqttClient.Publish(RESPONSE_TOPIC, Encoding.UTF8.GetBytes(json), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE , false);
+			
+		}
+		
+		public void setState(int state){
+			if(this.fw ==null)
+				return;
+			object[] field = new object[1];
+			field[0]= new {
+					        	field="mgmt.firmware",
+					        	value= new {
+					        		state=state
+					        	}
+			           };
+			var notify = new {
+				d = new {
+					fields=field
+					}
+				};
+			this.fw.state = state;
+			string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(notify);
+			mqttClient.Publish(NOTIFY_TOPIC, Encoding.UTF8.GetBytes(json), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE , false);
+		
+		}
+		
+		public void setUpdateState(int updateState){
+			if(this.fw ==null)
+				return;
+			object[] field = new object[1];
+			field[0]= new {
+					        	field="mgmt.firmware",
+					        	value= new {
+					        		state=UPDATESTATE_IDLE,
+					        		updateStatus = updateState
+					        	}
+			           };
+			var notify = new {
+				d = new {
+					fields=field
+					}
+				};
+			
+			this.fw.state = UPDATESTATE_IDLE;
+			this.fw.updateStatus = updateState;
+			string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(notify);
+			mqttClient.Publish(NOTIFY_TOPIC, Encoding.UTF8.GetBytes(json), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE , false);
+		
+		}
+		
         public delegate void processMgmtResponce( string reqestId, string responceCode);
 
         public event processMgmtResponce mgmtCallback;
+        
+        public delegate void processDeviceAction( string reqestId,string action);
+
+        public event processDeviceAction actionCallback;
+        
+        public delegate void processFirmwareAction(string action,DeviceFirmware firmware);
+
+        public event processFirmwareAction fwCallback;
     
 	
 	}

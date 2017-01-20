@@ -48,9 +48,10 @@ namespace IBMWIoTP
 		public string version{get;set;}
 		public string name{get;set;}
 		public string url{get;set;}
+		public string uri{get;set;}
 		public string verifier{get;set;}
-		public string state{get;set;}
-		public string updateStatus{get;set;}
+		public int state{get;set;}
+		public int updateStatus{get;set;}
 		public string updatedDateTime{get;set;}
 	}
 	
