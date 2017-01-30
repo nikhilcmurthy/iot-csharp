@@ -66,7 +66,7 @@ namespace test
 		[Test,ExpectedException (typeof(System.Exception))]
 		public void DeviceClientObjectCreationWithFilePathInvaidFile()
 		{
-			 testClient  = new IBMWIoTP.DeviceClient("propInvalid.txt");
+			 testClient  = new IBMWIoTP.DeviceClient("../../Resource/propInvalid.txt");
 		}
 		[Test]
 		public void DeviceClientConnectionStatus()

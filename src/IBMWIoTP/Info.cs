@@ -73,6 +73,7 @@ namespace IBMWIoTP
 		//public string updatedDateTime {get;set;}
 	}
 	
+	
 	public class GatewayError
 	{
 		public GatewayError()
@@ -98,14 +99,22 @@ namespace IBMWIoTP
 		public object metadata {get;set;}
 		public string authToken {get;set;}
 	}
+	public class RegisterSingleDevicesInfo	{
+		public RegisterSingleDevicesInfo(){
+		}
+		public string deviceId {get;set;}
+		public DeviceInfo deviceInfo {get;set;}
+		public LocationInfo location {get;set;}
+		public object metadata {get;set;}
+		public string authToken {get;set;}
+	}
 	public class UpdateDevicesInfo	{
 		public UpdateDevicesInfo(){
 			this.metadata =new {};
-			this.status = new {};
+			this.status = new { alert= new{enabled = true}};
 			this.extensions = new {};
 		}
 		public DeviceInfo deviceInfo {get;set;}
-		public LocationInfo location {get;set;}
 		public object metadata {get;set;}
 		public object status {get;set;}
 		public object extensions {get;set;}

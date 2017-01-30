@@ -15,6 +15,8 @@ using System.Net;
 using System.Text;
 using System.Web.Script.Serialization;
 
+using log4net;
+
 namespace IBMWIoTP
 {
 	/// <summary>
@@ -22,6 +24,7 @@ namespace IBMWIoTP
 	/// </summary>
 	public class ApiClient
 	{
+		ILog log = log4net.LogManager.GetLogger(typeof(ApplicationClient));
 		private static string BaseURL = "https://{0}.internetofthings.ibmcloud.com/api/v0002";
 		
 		private static string OrgInfo = "/";
@@ -41,7 +44,7 @@ namespace IBMWIoTP
 		
 		private static string DeviceLogs = "/device/types/{0}/devices/{1}/diag/logs";
 		private static string DeviceLog = "/device/types/{0}/devices/{1}/diag/logs/{2}";
-		private static string DeviceErrorCode = "/device/types/{0}/devices/{1}/diag/errorCode";
+		private static string DeviceErrorCode = "/device/types/{0}/devices/{1}/diag/errorCodes";
 	
 		private static string Problem = "/logs/connection";
 		
@@ -92,7 +95,8 @@ namespace IBMWIoTP
 			byte[] credentialBuffer = new UTF8Encoding().GetBytes(_apiKey + ":" +_authToken);
 			request.Headers["Authorization"] ="Basic " + Convert.ToBase64String(credentialBuffer);
 			request.PreAuthenticate = true;
-			request.Timeout = this.Timeout == null ? this.Timeout : 100000;
+			request.Timeout = Timeout == null ?  100000 :Timeout;
+			log.Info("Request " +methord+"  "+url);
 			
 			if(param != null & !isQuerry){
 				request.ContentType = "application/json";
@@ -100,6 +104,7 @@ namespace IBMWIoTP
 				using (var streamWriter = new StreamWriter(request.GetRequestStream()))
 				{
 				    string json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(param);
+					log.Info("Request Json " +json);
 				
 				    streamWriter.Write(json);
 				    streamWriter.Flush();
@@ -107,15 +112,17 @@ namespace IBMWIoTP
 				}
 			}
 			// Get the response.
-			var  response =(HttpWebResponse) request.GetResponse();
+			HttpWebResponse  response =(HttpWebResponse) request.GetResponse();
 			int responseCode =(int) response.StatusCode;
-			if(isJsonResponce){
-				using (var responseStream = response.GetResponseStream())
-				{
-					if (responseStream != null)
-					using (var reader = new StreamReader(responseStream))
-					{	
-						var JsonResponce = reader.ReadToEnd();
+			log.Info("responce " +response.ResponseUri +"  " +responseCode);
+			
+			using (var responseStream = response.GetResponseStream())
+			{
+				if (responseStream != null)
+				using (var reader = new StreamReader(responseStream))
+				{	
+					var JsonResponce = reader.ReadToEnd();
+					if(isJsonResponce){
 						return new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<dynamic>(JsonResponce);
 					}
 				}
@@ -171,12 +178,12 @@ namespace IBMWIoTP
 			return RestHandler("GET",string.Format(Device,type),null,true);
 		}
 		
-		public dynamic RegisterDevice(string type, RegisterDevicesInfo info){
-			return RestHandler("GET",string.Format(Device,type),info,true);
+		public dynamic RegisterDevice(string type, RegisterSingleDevicesInfo info){
+			return RestHandler("POST",string.Format(Device,type),info,true);
 		}
 		
 		public dynamic UnregisterDevice(string type, string deviceId){
-			return RestHandler("DELETE",string.Format(DeviceIndigvual,type,deviceId),null,true);
+			return RestHandler("DELETE",string.Format(DeviceIndigvual,type,deviceId),null,false);
 		}
 		
 		public dynamic GetDeviceInfo(string type, string deviceId){
@@ -196,7 +203,7 @@ namespace IBMWIoTP
 		}
 		
 		public dynamic UpdateDeviceLocationInfo(string type, string deviceId,LocationInfo info){
-			return RestHandler("GET",string.Format(DeviceLocation,type,deviceId),info,true);
+			return RestHandler("PUT",string.Format(DeviceLocation,type,deviceId),info,false);
 		}
 		
 		public dynamic GetDeviceManagementInfo(string type, string deviceId){
@@ -229,7 +236,7 @@ namespace IBMWIoTP
 			return RestHandler("DELETE",string.Format(DeviceErrorCode,type,deviceId),null,false);
 		}
 		public dynamic AddErrorCode(string type, string deviceId,ErrorCodeInfo err){
-			return RestHandler("POST",string.Format(DeviceErrorCode,type,deviceId),err,true);
+			return RestHandler("POST",string.Format(DeviceErrorCode,type,deviceId),err,false);
 		}
 		
 		public dynamic GetDeviceConnectionLogs(string type, string deviceId){
