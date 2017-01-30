@@ -19,8 +19,8 @@ namespace ApiClient
 	{
 		public static void Main(string[] args)
 		{
-			string apiKey ="a-pzkn7c-qrdizzflsl";
-			string authToken ="(ue0kq-(DvLkBYPPzX";
+			string apiKey ="";
+			string authToken ="";
 			string managedDeviceType = "demotest";
 			string managedDeviceId ="1234";
 			if(string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(authToken)){
