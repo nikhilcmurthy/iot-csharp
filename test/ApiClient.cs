@@ -211,7 +211,7 @@ namespace test
 		public void GetDeviceManagementInfo()
 		{
 			var result = client.GetDeviceManagementInfo(deviceType,deviceId);
-			Assert.IsTrue(result.GetType().GetProperty("supports") != null);
+			Assert.IsTrue(result["supports"]["deviceActions"]);
 		}
 		
 		//log

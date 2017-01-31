@@ -102,5 +102,7 @@ namespace test
 			Assert.AreEqual(sample.RC , "200");
 			Assert.AreEqual(sample.Message , "test msg");
 		}
+		
+		
 	}
 }
