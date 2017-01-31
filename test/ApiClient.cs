@@ -385,7 +385,7 @@ namespace test
 		}
 		//weather
 		
-		[Test]
+		[Test,ExpectedException (typeof (System.Net.WebException))]
 		public void GetDeviceLocationWeather()
 		{
 			var result = client.GetDeviceLocationWeather(deviceType,deviceId);
