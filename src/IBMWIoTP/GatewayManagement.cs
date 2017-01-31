@@ -10,16 +10,16 @@
  *   Hari hara prasad Viswanathan  - Initial Contribution
  */
 using System;
-using System.Text;
-using System.Dynamic;
-using System.Threading;
 using System.Collections.Generic;
-
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
-using uPLibrary.Networking.M2Mqtt.Exceptions;
+using System.Dynamic;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 
 using log4net;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Exceptions;
+using uPLibrary.Networking.M2Mqtt.Messages;
 
 namespace IBMWIoTP
 {
@@ -209,8 +209,12 @@ namespace IBMWIoTP
 	            DeviceActionReq fwData;
 				int rc;
 				string msg;
-				
-				if(e.Topic == string.Format(DM_RESPONSE_TOPIC,this.gatewayDeviceType,this.gatewayDeviceID) ){
+				string pat = @"(^iotdm-1/type/)(.*)(/id/)(.*)(/response)";
+
+		      // Instantiate the regular expression object.
+		      	Regex regx = new Regex(pat, RegexOptions.IgnoreCase);
+				//if(e.Topic == string.Format(DM_RESPONSE_TOPIC,this.gatewayDeviceType,this.gatewayDeviceID) ){
+				if(regx.IsMatch(e.Topic )){
 			            var responce = serializer.Deserialize<DMResponce>(result);
 			            var itm =  collection.Find( x => x.reqID == responce.reqId );
 			            if( itm is DMRequest)
