@@ -48,9 +48,10 @@ namespace IBMWIoTP
 		public string version{get;set;}
 		public string name{get;set;}
 		public string url{get;set;}
+		public string uri{get;set;}
 		public string verifier{get;set;}
-		public string state{get;set;}
-		public string updateStatus{get;set;}
+		public int state{get;set;}
+		public int updateStatus{get;set;}
 		public string updatedDateTime{get;set;}
 	}
 	
@@ -71,6 +72,7 @@ namespace IBMWIoTP
 		public string measuredDateTime {get;set;}
 		//public string updatedDateTime {get;set;}
 	}
+	
 	
 	public class GatewayError
 	{
@@ -97,14 +99,22 @@ namespace IBMWIoTP
 		public object metadata {get;set;}
 		public string authToken {get;set;}
 	}
+	public class RegisterSingleDevicesInfo	{
+		public RegisterSingleDevicesInfo(){
+		}
+		public string deviceId {get;set;}
+		public DeviceInfo deviceInfo {get;set;}
+		public LocationInfo location {get;set;}
+		public object metadata {get;set;}
+		public string authToken {get;set;}
+	}
 	public class UpdateDevicesInfo	{
 		public UpdateDevicesInfo(){
 			this.metadata =new {};
-			this.status = new {};
+			this.status = new { alert= new{enabled = true}};
 			this.extensions = new {};
 		}
 		public DeviceInfo deviceInfo {get;set;}
-		public LocationInfo location {get;set;}
 		public object metadata {get;set;}
 		public object status {get;set;}
 		public object extensions {get;set;}

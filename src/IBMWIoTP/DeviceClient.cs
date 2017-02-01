@@ -194,8 +194,8 @@ namespace IBMWIoTP
 	            string topic = e.Topic;
 	            string[] tokens = topic.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
 	            log.Info("tokens from Device Client : " + tokens);
-	            
-	            this.commandCallback(tokens[2], tokens[4], result);
+	            if(tokens.Length >= 2  && tokens[0] == "iot-2" && tokens[1] == "cmd")
+	            	this.commandCallback(tokens[2], tokens[4], result);
             }
         	catch(Exception ex)
         	{
