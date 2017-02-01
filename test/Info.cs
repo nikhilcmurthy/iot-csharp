@@ -103,6 +103,144 @@ namespace test
 			Assert.AreEqual(sample.Message , "test msg");
 		}
 		
+		[Test]
+		public void RegisterDevicesInfoObjectTest()
+		{
+			RegisterDevicesInfo sample = new RegisterDevicesInfo();
+			sample.typeId = "my id";
+			sample.deviceId = "my device id";
+			sample.metadata = "test" ;
+			sample.authToken = "my token";
+			sample.deviceInfo = new DeviceInfo();
+			sample.deviceInfo.description ="my device";
+			sample.location = new LocationInfo();
+			sample.location.accuracy = 1;
+			
+			Assert.AreEqual("my id",sample.typeId);
+			Assert.AreEqual("my device id",sample.deviceId);
+			Assert.AreEqual("test",sample.metadata);
+			Assert.AreEqual("my token",sample.authToken);
+			Assert.AreEqual("my device",sample.deviceInfo.description);
+			Assert.AreEqual(1,sample.location.accuracy);
+		}
+		[Test]
+		public void RegisterSingleDevicesInfoObjectTest()
+		{
+			RegisterSingleDevicesInfo sample = new RegisterSingleDevicesInfo();
+			sample.deviceId = "my device id";
+			sample.metadata = "test" ;
+			sample.authToken = "my token";
+			sample.deviceInfo = new DeviceInfo();
+			sample.deviceInfo.description ="my device";
+			sample.location = new LocationInfo();
+			sample.location.accuracy = 1;
+			
+			Assert.AreEqual("my device id",sample.deviceId);
+			Assert.AreEqual("test",sample.metadata);
+			Assert.AreEqual("my token",sample.authToken);
+			Assert.AreEqual("my device",sample.deviceInfo.description);
+			Assert.AreEqual(1,sample.location.accuracy);
+		}
+		[Test]
+		public void UpdateDevicesInfoObjectTest()
+		{
+			UpdateDevicesInfo sample = new UpdateDevicesInfo();
+			sample.metadata = "test" ;
+			sample.deviceInfo = new DeviceInfo();
+			sample.deviceInfo.description ="my device";
+			sample.extensions = "test";
+			sample.status = "test";
+			
+			Assert.AreEqual("test",sample.metadata);
+			Assert.AreEqual("test",sample.extensions);
+			Assert.AreEqual("test",sample.status);
+			Assert.AreEqual("my device",sample.deviceInfo.description);
+		}
 		
+		[Test]
+		public void DeviceListElementObjectTest()
+		{
+			DeviceListElement sample = new DeviceListElement();
+			sample.typeId = "my id";
+			sample.deviceId = "my device id";
+			
+			Assert.AreEqual("my id",sample.typeId);
+			Assert.AreEqual("my device id",sample.deviceId);
+		}
+		
+		[Test]
+		public void DeviceTypeInfoObjectTest()
+		{
+			DeviceTypeInfo sample = new DeviceTypeInfo();
+			sample.id = "my id";
+			sample.classId = "device";
+			sample.description ="my device";
+			sample.metadata = "test" ;
+			sample.deviceInfo = new DeviceInfo();
+			sample.deviceInfo.description ="my device";
+			
+			Assert.AreEqual("my id",sample.id);
+			Assert.AreEqual("device",sample.classId);
+			Assert.AreEqual("my device",sample.description);
+			Assert.AreEqual("my device",sample.deviceInfo.description);
+			Assert.AreEqual("test",sample.metadata);
+			
+		}
+		
+		[Test]
+		public void DeviceTypeInfoUpdateObjectTest()
+		{
+			DeviceTypeInfoUpdate sample = new DeviceTypeInfoUpdate();
+			sample.description ="my device";
+			sample.metadata = "test" ;
+			sample.deviceInfo = new DeviceInfo();
+			sample.deviceInfo.description ="my device";
+			
+			Assert.AreEqual("my device",sample.description);
+			Assert.AreEqual("my device",sample.deviceInfo.description);
+			Assert.AreEqual("test",sample.metadata);
+			
+		}
+		[Test]
+		public void LogInfoObjectTest()
+		{
+			LogInfo sample = new LogInfo();
+			sample.message ="msg";
+			sample.severity = 1;
+			sample.timestamp = "time";
+			sample.data="my data";
+
+			
+			Assert.AreEqual("my data",sample.data);
+			Assert.AreEqual("time",sample.timestamp);
+			Assert.AreEqual("msg",sample.message);
+			Assert.AreEqual(1,sample.severity);
+			
+		}
+		[Test]
+		public void ErrorCodeInfoObjectTest()
+		{
+			ErrorCodeInfo sample = new ErrorCodeInfo();
+			sample.errorCode = 1;
+			sample.timestamp = "time";
+
+			
+			Assert.AreEqual("time",sample.timestamp);
+			Assert.AreEqual(1,sample.errorCode);
+			
+		}
+		
+		[Test]
+		public void DeviceMgmtparameterObjectTest()
+		{
+			DeviceMgmtparameter sample = new DeviceMgmtparameter();
+			sample.name = "param1";
+			sample.value = "value";
+
+			
+			Assert.AreEqual("param1",sample.name);
+			Assert.AreEqual("value",sample.value);
+			
+		}
 	}
 }
