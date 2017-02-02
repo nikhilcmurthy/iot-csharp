@@ -10,6 +10,7 @@
  *   Hari hara prasad Viswanathan  - Initial Contribution
  */
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 
@@ -66,14 +67,14 @@ namespace test
 			
 			bulk[0] = info;
 			var result = client.RegisterMultipleDevices(bulk);
-			int length = result.Length;
+			int length = result.GetType() == typeof(ArrayList) ? result.Count : result.Length;
 			Assert.That(length,Is.Not.EqualTo(0));
 		}
 		[Test]
 		public void Bulk_b_GetAll()
 		{
 			var result = client.GetAllDevices();
-			int length = result["results"].Length;
+			int length = result["results"].GetType() == typeof(ArrayList) ? result["results"].Count : result["results"].Length;
 			Assert.That(length,Is.Not.EqualTo(0));
 		}
 		[Test]
@@ -116,7 +117,7 @@ namespace test
 		public void DeviceType_c_GetAll()
 		{
 			var result = client.GetAllDeviceTypes();
-			int length = result["results"].Length;
+			int length = result["results"].GetType() == typeof(ArrayList) ? result["results"].Count : result["results"].Length;
 			Assert.That(length,Is.Not.EqualTo(0));
 		}
 		
@@ -156,7 +157,7 @@ namespace test
 			var u = new IBMWIoTP.DeviceTypeInfoUpdate();
 			u.description="test";
 			var result = client.ListDevices(deviceType);
-			int length = result["results"].Length;
+			int length =  result["results"].GetType() == typeof(ArrayList) ? result["results"].Count : result["results"].Length;
 			Assert.That(length,Is.Not.EqualTo(0));
 		}
 		[Test]
@@ -202,7 +203,7 @@ namespace test
 		public void GetGatewayConnectedDevice()
 		{
 			var result = client.GetGatewayConnectedDevice(gatewayType,gatwayId);
-			int length = result["results"].Length;
+			int length = result["results"].GetType() == typeof(ArrayList) ? result["results"].Count : result["results"].Length;
 			Assert.That(length,Is.GreaterThanOrEqualTo(0));
 		}
 		
@@ -289,7 +290,7 @@ namespace test
 		public void GetDeviceConnectionLogs()
 		{
 			var result = client.GetDeviceConnectionLogs(deviceType,deviceId);
-			int length = result.Length;
+			int length = result.GetType() == typeof(ArrayList) ? result.Count : result.Length;
 			Assert.That(length,Is.Not.EqualTo(0));
 		}
 		
@@ -312,7 +313,7 @@ namespace test
 		public void GetLastEvents()
 		{
 			var result = client.GetLastEvents(deviceType,deviceId);
-			int length = result.Length;
+			int length = result.GetType() == typeof(ArrayList) ? result.Count : result.Length;
 			Assert.That(length,Is.Not.EqualTo(0));
 		}
 		
@@ -351,7 +352,7 @@ namespace test
 		public void DeviceManagementRequests_b_GetAll()
 		{
 			var result = client.GetAllDeviceManagementRequests();
-			int length = result["results"].Length;
+			int length = result["results"].GetType() == typeof(ArrayList) ? result["results"].Count : result["results"].Length;
 			Assert.That(length,Is.Not.EqualTo(0));
 		}
 		
@@ -366,7 +367,7 @@ namespace test
 		public void DeviceManagementRequests_d_GetStatus()
 		{
 			var result = client.GetDeviceManagementRequestStatus(dmReqId);
-			int length = result["results"].Length;
+			int length = result["results"].GetType() == typeof(ArrayList) ? result["results"].Count : result["results"].Length;
 			Assert.That(length,Is.Not.EqualTo(0));
 		}
 		
