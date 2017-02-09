@@ -10,6 +10,26 @@ This C# Client Library can be used to simplify interactions with the [IBM Watson
 - The [Application section] (docs/Application.rst) details how applications can use the C# IBMWIoTP Client Library to interact with devices.
 
 -----
+
+Supported Features
+------------------
+
+| Feature   |      Supported?      |
+|----------|:-------------:|
+| Device connectivity |  &#10004; |
+| Gateway connectivity |    &#10004;   |
+| Application connectivity | &#10004; |
+| Watson IoT API | &#10008; |
+| SSL/TLS | &#10004; |
+| Client side Certificate based authentication | &#10008; |
+| Device Management | &#10004; |
+| Device Management Extension(DME) | &#10008; |
+| Scalable Application | &#10004; |
+| Auto reconnect | &#10008; |
+| Websocket | &#10008; |
+| Event/Command publish using MQTT| &#10004; |
+| Event/Command publish using HTTP| &#10008; |
+
 NuGet Package
 --------------------------------
  C# library is available in [nuget](https://www.nuget.org/packages/IBMWIoTP/)
