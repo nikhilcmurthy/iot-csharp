@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2017 IBM Corporation and other Contributors.
+ *  Copyright (c) 2016-2017 IBM Corporation and other Contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -69,7 +69,9 @@ namespace IBMWIoTP
 
             try {
             	X509Certificate cer = new X509Certificate();
-				      cer.Import("message.pem");
+            	if(File.Exists("message.pem")){
+					cer.Import("message.pem");
+            	}
 	            log.Info("hostname is :" + hostName);
 	            mqttClient = new MqttClient(hostName,MQTTS_PORT,true,cer,new X509Certificate(),MqttSslProtocols.TLSv1_2);
             

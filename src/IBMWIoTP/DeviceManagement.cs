@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright (c) 2016 IBM Corporation and other Contributors.
+ *  Copyright (c) 2016-2017 IBM Corporation and other Contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -50,7 +50,7 @@ namespace IBMWIoTP
 		const string DM_FIRMWARE_DOWNLOAD_TOPIC = "iotdm-1/mgmt/initiate/firmware/download";
 		const string DM_FIRMWARE_UPDATE_TOPIC = "iotdm-1/mgmt/initiate/firmware/update";
 		
-		//ResponceCode 
+		//ResponseCode 
 		public static int RESPONSECODE_FUNCTION_NOT_SUPPORTED = 501;
 		public static int RESPONSECODE_ACCEPTED = 202;
 		public static int RESPONSECODE_INTERNAL_ERROR = 500;
@@ -148,9 +148,9 @@ namespace IBMWIoTP
 			public string json {get;set;}
 		}
 		
-		class DMResponce
+		class DMResponse
 		{
-			public DMResponce()
+			public DMResponse()
 			{
 			}
 			public string reqId {get;set;}
@@ -205,13 +205,13 @@ namespace IBMWIoTP
 				
 				switch (e.Topic) {
 					case DM_RESPONSE_TOPIC :
-				            var responce = serializer.Deserialize<DMResponce>(result);
-				            var itm =  collection.Find( x => x.reqID == responce.reqId );
+				            var response = serializer.Deserialize<DMResponse>(result);
+				            var itm =  collection.Find( x => x.reqID == response.reqId );
 				            if( itm is DMRequest)
 				            {
-				            	log.Info("["+responce.rc+"]  "+itm.topic+" of ReqId  "+ itm.reqID);
+				            	log.Info("["+response.rc+"]  "+itm.topic+" of ReqId  "+ itm.reqID);
 				            	if(this.mgmtCallback !=null)
-				            		this.mgmtCallback(itm.reqID,responce.rc);
+				            		this.mgmtCallback(itm.reqID,response.rc);
 				            	collection.Remove(itm);
 				            }
 				             if(this.isSync){
@@ -222,17 +222,17 @@ namespace IBMWIoTP
 						break;
 					
 					case DM_REBOOT_TOPIC :
-					 	var res = serializer.Deserialize<DMResponce>(result);
+					 	var res = serializer.Deserialize<DMResponse>(result);
 						log.Info("Device Rebot action called with ReqId : " +res.reqId );
 						if(this.actionCallback != null)
 							this.actionCallback(res.reqId , "reboot");
 						break;
 
 					case DM_FACTORY_RESET :
-					 	var resetResponce = serializer.Deserialize<DMResponce>(result);
-						log.Info("Device Factory rest action called with ReqId : " +resetResponce.reqId );
+					 	var resetResponse = serializer.Deserialize<DMResponse>(result);
+						log.Info("Device Factory rest action called with ReqId : " +resetResponse.reqId );
 						if(this.actionCallback != null)
-							this.actionCallback(resetResponce.reqId , "reset");
+							this.actionCallback(resetResponse.reqId , "reset");
 						break;
 					case DM_UPDATE_TOPIC :
 						 fwData = serializer.Deserialize<DeviceActionReq>(result);
@@ -245,14 +245,14 @@ namespace IBMWIoTP
 						}
 						if(this.fw != null)
 						{
-							sendResponce(fwData.reqId,204,"");
+							sendResponse(fwData.reqId,204,"");
 						}
 
 						break;
 						
 					case DM_OBSERVE_TOPIC :
 						fwData = serializer.Deserialize<DeviceActionReq>(result);
-						sendResponce(fwData.reqId,200,"");
+						sendResponse(fwData.reqId,200,"");
 						break;
 						
 					case DM_FIRMWARE_DOWNLOAD_TOPIC :
@@ -286,7 +286,7 @@ namespace IBMWIoTP
 					
 					case DM_CANCEL_OBSERVE_TOPIC :
 						fwData = serializer.Deserialize<DeviceActionReq>(result);
-						sendResponce(fwData.reqId,200,"");
+						sendResponse(fwData.reqId,200,"");
 						break;
 
 					default:
@@ -521,15 +521,26 @@ namespace IBMWIoTP
         		return "";
         	}
 		}
-		
-		public void sendResponce ( string reqId, int rc ,string msg){
+		/// <summary>
+		/// To send device Action respoce to the Watson IoT Platform
+		/// </summary>
+		/// <param name="reqId">String value of device action request id</param>
+		/// <param name="rc">Int value of response code </param>
+		/// <param name="msg">String value of response message</param>
+		public void sendResponse ( string reqId, int rc ,string msg){
 			var message = new { reqId =reqId , rc = Convert.ToString(rc) , message = msg};
 			var json = new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(message);
-			log.Info("Sending DM responce with payload " +json);
+			log.Info("Sending DM response with payload " +json);
 			mqttClient.Publish(RESPONSE_TOPIC, Encoding.UTF8.GetBytes(json), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE , false);
 			
 		}
-		
+		/// <summary>
+		/// To set the download state of the firmware download request
+		/// 0 	Idle 	The device is currently not in the process of downloading firmware.
+		/// 1 	Downloading 	The device is currently downloading firmware.
+		/// 2 	Downloaded	The device successfully downloaded a firmware update and is ready to install it.
+		/// </summary>
+		/// <param name="state">Int value of the state</param>
 		public void setState(int state){
 			if(this.fw ==null)
 				return;
@@ -551,6 +562,17 @@ namespace IBMWIoTP
 		
 		}
 		
+		/// <summary>
+		/// To set the update state of the firmware update request
+		/// 0 	Success 	The firmware was successfully updated.
+		/// 1 	In Progress 	The firmware update was initiated but is not yet complete.
+		/// 2 	Out of Memory 	An out-of-memory condition was detected during the operation.
+		/// 3 	Connection Lost 	The connection was lost during the firmware download.
+		/// 4 	Verification Failed 	The firmware did not pass verification.
+		/// 5 	Unsupported Image 	The downloaded firmware image is not supported by the device.
+		/// 6 	Invalid URI 	The device could not download the firmware from the provided URI.
+		/// </summary>
+		/// <param name="updateState">Int value of the state</param>
 		public void setUpdateState(int updateState){
 			if(this.fw ==null)
 				return;
@@ -575,9 +597,9 @@ namespace IBMWIoTP
 		
 		}
 		
-        public delegate void processMgmtResponce( string reqestId, string responceCode);
+        public delegate void processMgmtResponse( string reqestId, string responseCode);
 
-        public event processMgmtResponce mgmtCallback;
+        public event processMgmtResponse mgmtCallback;
         
         public delegate void processDeviceAction( string reqestId,string action);
 

@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright (c) 2016 IBM Corporation and other Contributors.
+ *  Copyright (c) 2017 IBM Corporation and other Contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -200,9 +200,9 @@ namespace ApiClient
 				ele.typeId = managedDeviceType;
 				ele.deviceId= managedDeviceId;
 				deviceList[0] = ele;
-				var responce =client.InitiateDeviceManagementRequest("device/reboot",param,deviceList);//new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<dynamic>(jsonResponse);
-				Console.WriteLine(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(responce));
-				string id = responce["reqId"];
+				var response =client.InitiateDeviceManagementRequest("device/reboot",param,deviceList);//new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<dynamic>(jsonResponse);
+				Console.WriteLine(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(response));
+				string id = response["reqId"];
 				
 				Console.WriteLine("GetDeviceManagementRequest");
 				Console.WriteLine( new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(client.GetDeviceManagementRequest(id)));

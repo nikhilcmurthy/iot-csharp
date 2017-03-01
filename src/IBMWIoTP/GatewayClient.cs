@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright (c) 2016 IBM Corporation and other Contributors.
+ *  Copyright (c) 2016-2017 IBM Corporation and other Contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -63,7 +63,7 @@ namespace IBMWIoTP
 		{
 			this.gatewayDeviceID =gatewayDeviceID;
 			this.gatewayDeviceType =gatewayDeviceType;
-			this.authtoken = authtoken;
+			this.authtoken = authToken;
 		}
 		/// <summary>
 		/// Constructor of Gateway Client, helps to connect a gateway to The Watson IoT Platform
@@ -268,9 +268,9 @@ namespace IBMWIoTP
 	            {
 	            	string[] tokens = topic.Split(new string[] { "/" }, StringSplitOptions.RemoveEmptyEntries);
           		 	var serializer  = new System.Web.Script.Serialization.JavaScriptSerializer();
-        			GatewayError responce = serializer.Deserialize<GatewayError>(result);
+        			GatewayError response = serializer.Deserialize<GatewayError>(result);
 	            	if(this.errorCallback != null)
-	           			this.errorCallback(tokens[2], tokens[4],responce);
+	           			this.errorCallback(tokens[2], tokens[4],response);
 	            	
 	            }
 	            

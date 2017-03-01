@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright (c) $(YEAR) IBM Corporation and other Contributors.
+ *  Copyright (c) 2017 IBM Corporation and other Contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -54,11 +54,11 @@ namespace GatewayMgmtAction
 		    
 		    GatewayManagement	gwMgmtClient = new GatewayManagement(orgID,deviceType,deviceId,authType,authKey,isSync);
 			gwMgmtClient.deviceInfo = simpleDeviceInfo;
-			gwMgmtClient.mgmtCallback += processMgmtResponce;
+			gwMgmtClient.mgmtCallback += processMgmtResponse;
 			gwMgmtClient.actionCallback += (string reqestId,string action)=>{
 				Console.WriteLine("req Id:" + reqestId +"	Action:"+ action +" called");
 				if(action == "reboot"){
-					gwMgmtClient.sendResponce(reqestId,DeviceManagement.RESPONSECODE_ACCEPTED,"");
+					gwMgmtClient.sendResponse(reqestId,DeviceManagement.RESPONSECODE_ACCEPTED,"");
 
 					Thread.Sleep(2000);
 					gwMgmtClient.disconnect();
@@ -72,7 +72,7 @@ namespace GatewayMgmtAction
 					gwMgmtClient.managedGateway(4000,true,true);
 				}
 				if(action == "reset"){
-					gwMgmtClient.sendResponce(reqestId,DeviceManagement.RESPONSECODE_FUNCTION_NOT_SUPPORTED,"");
+					gwMgmtClient.sendResponse(reqestId,DeviceManagement.RESPONSECODE_FUNCTION_NOT_SUPPORTED,"");
 				}
 		
 			};
@@ -103,8 +103,8 @@ namespace GatewayMgmtAction
 			
 			
 		}
-		public static void processMgmtResponce( string reqestId, string responceCode){
-			Console.WriteLine("req Id:" + reqestId +"	responceCode:"+ responceCode);
+		public static void processMgmtResponse( string reqestId, string responseCode){
+			Console.WriteLine("req Id:" + reqestId +"	responseCode:"+ responseCode);
 		}
 		
         

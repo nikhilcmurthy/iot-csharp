@@ -1,5 +1,5 @@
 ﻿/*
- *  Copyright (c) $(YEAR) IBM Corporation and other Contributors.
+ *  Copyright (c) 2017 IBM Corporation and other Contributors.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -53,11 +53,11 @@ namespace DeviceManagementAction
 		    
 		    DeviceManagement	deviceClient = new DeviceManagement(orgID,deviceType,deviceId,authType,authKey,isSync);
 			deviceClient.deviceInfo = simpleDeviceInfo;
-			deviceClient.mgmtCallback += processMgmtResponce;
+			deviceClient.mgmtCallback += processMgmtResponse;
 			deviceClient.actionCallback += (string reqestId,string action)=>{
 				Console.WriteLine("req Id:" + reqestId +"	Action:"+ action +" called");
 				if(action == "reboot"){
-					deviceClient.sendResponce(reqestId,DeviceManagement.RESPONSECODE_ACCEPTED,"");
+					deviceClient.sendResponse(reqestId,DeviceManagement.RESPONSECODE_ACCEPTED,"");
 
 					Thread.Sleep(2000);
 					deviceClient.disconnect();
@@ -71,7 +71,7 @@ namespace DeviceManagementAction
 					deviceClient.manage(4000,true,true);
 				}
 				if(action == "reset"){
-					deviceClient.sendResponce(reqestId,DeviceManagement.RESPONSECODE_FUNCTION_NOT_SUPPORTED,"");
+					deviceClient.sendResponse(reqestId,DeviceManagement.RESPONSECODE_FUNCTION_NOT_SUPPORTED,"");
 				}
 		
 			};
@@ -106,8 +106,8 @@ namespace DeviceManagementAction
 			
 			
 		}
-		public static void processMgmtResponce( string reqestId, string responceCode){
-			Console.WriteLine("req Id:" + reqestId +"	responceCode:"+ responceCode);
+		public static void processMgmtResponse( string reqestId, string responseCode){
+			Console.WriteLine("req Id:" + reqestId +"	responseCode:"+ responseCode);
 		}
 		
         public static void processCommand(string cmdName, string format, string data) {

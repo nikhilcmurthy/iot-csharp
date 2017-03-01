@@ -64,7 +64,7 @@ namespace GatewayMgmt
 		    
 			GatewayManagement gwMgmtClient =new GatewayManagement(orgId,gatewayDeviceType,gatewayDeviceID,authMethod,authToken,isSync);
 			gwMgmtClient.deviceInfo = simpleDeviceInfo;
-			gwMgmtClient.mgmtCallback += processMgmtResponce;
+			gwMgmtClient.mgmtCallback += processMgmtResponse;
 			gwMgmtClient.connect();
 			
 			Console.WriteLine("Managed Gateway");
@@ -124,8 +124,8 @@ namespace GatewayMgmt
 			gwMgmtClient.disconnect();
 			
 		}
-		public static void processMgmtResponce( string reqestId, string responceCode){
-			Console.WriteLine("req Id:" + reqestId +"	responceCode:"+ responceCode);
+		public static void processMgmtResponse( string reqestId, string responseCode){
+			Console.WriteLine("req Id:" + reqestId +"	responseCode:"+ responseCode);
 		}
 	}
 }

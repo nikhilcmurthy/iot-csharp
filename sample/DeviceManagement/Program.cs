@@ -53,7 +53,7 @@ namespace deviceManagement
 		    
 			DeviceManagement	deviceClient = new DeviceManagement(orgID,deviceType,deviceId,authType,authKey,isSync);
 			deviceClient.deviceInfo = simpleDeviceInfo;
-			deviceClient.mgmtCallback += processMgmtResponce;
+			deviceClient.mgmtCallback += processMgmtResponse;
 			deviceClient.connect();
 			Console.WriteLine("Manage");
 			deviceClient.manage(4000,true,true);
@@ -75,8 +75,8 @@ namespace deviceManagement
 			Console.ReadKey();
 			deviceClient.disconnect();
 		}
-		public static void processMgmtResponce( string reqestId, string responceCode){
-			Console.WriteLine("req Id:" + reqestId +"	responceCode:"+ responceCode);
+		public static void processMgmtResponse( string reqestId, string responseCode){
+			Console.WriteLine("req Id:" + reqestId +"	responseCode:"+ responseCode);
 		}
 	}
 }
