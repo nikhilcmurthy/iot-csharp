@@ -19,7 +19,7 @@ Supported Features
 | Device connectivity |  &#10004; |
 | Gateway connectivity |    &#10004;   |
 | Application connectivity | &#10004; |
-| Watson IoT API | &#10008; |
+| Watson IoT API | &#10004; |
 | SSL/TLS | &#10004; |
 | Client side Certificate based authentication | &#10008; |
 | Device Management | &#10004; |
