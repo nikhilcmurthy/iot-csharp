@@ -24,7 +24,7 @@ namespace com.ibm.iotf.client.app.sample
         {
             try
             {
-                string data = "name:foo,cpu:60,mem:50";
+                string data = "{\"name\":\"foo\",\"cpu\":60,\"mem\":50}";
                 string deviceType = "";
                 string deviceId = "";
                 string evt = "test";
