@@ -108,7 +108,28 @@ namespace IBMWIoTP
             	log.Error("Execption has occer in connecting to MQTT",e);
             }
         }
-
+		/// <summary>
+        ///     Connect the device from the IBM Watson IoT Platform
+        /// </summary>
+        public virtual void connect(bool cleanSession , ushort keepAlivePeriod)
+        {
+            try 
+            {
+                
+                if(orgId == "quickstart"){
+                    mqttClient.Connect(clientId);
+                }
+                else
+                {
+                	mqttClient.Connect(clientId, clientUsername, clientPassword,cleanSession,keepAlivePeriod);
+                }
+                log.Info("Device Connected to IBM Watson IoT Platform");
+            }
+            catch (Exception e)
+            {
+            	log.Error("Execption has occer in connecting to MQTT",e);
+            }
+        }
         /// <summary>
         ///     Disconnect the device from the IBM Watson IoT Platform
         /// </summary>
