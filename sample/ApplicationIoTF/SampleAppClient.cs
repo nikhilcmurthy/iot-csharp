@@ -42,7 +42,7 @@ namespace com.ibm.iotf.client.app.sample
 				Console.Write("Enter your auth token :");
 				authToken = Console.ReadLine();
 				
-				
+				Console.Write("Please enter device details to which you want to subscribe event and send command...");
 				
                 Console.Write("Enter your device type :");
 				deviceType = Console.ReadLine();
@@ -65,7 +65,7 @@ namespace com.ibm.iotf.client.app.sample
                 applicationClient.subscribeToDeviceStatus();
                 applicationClient.subscribeToApplicationStatus();
                 
-                Console.Write("Please enter device details to which you want to subscribe event and send command...");
+                
 
                 applicationClient.subscribeToDeviceEvents(deviceType, deviceId, evt, format, 0);
             

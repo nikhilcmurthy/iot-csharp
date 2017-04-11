@@ -110,7 +110,7 @@ Subscribe to status updates for all devices
 .. code:: C#
 
    applicationClient.connect();
-   applicationClient.subscribeToDeviceStatus += processDeviceStatus;
+   applicationClient.deviceStatusCallback += processDeviceStatus;
    applicationClient.subscribeToDeviceStatus();
 
 
